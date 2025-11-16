@@ -66,18 +66,34 @@ def get_demucs_model(model_name="htdemucs"):
     """Carga el modelo Demucs una sola vez y lo guarda en caché."""
     return get_model(model_name).to("cpu").eval()
 
+def load_audio_pydub(path, target_sr=44100):
+    """Carga cualquier audio (MP3/WAV) usando pydub y devuelve np.array normalizado y sample rate."""
+    audio = AudioSegment.from_file(path)
+    audio = audio.set_channels(1).set_frame_rate(target_sr)
+    samples = np.array(audio.get_array_of_samples()).astype(np.float32) / 32768.0
+    return samples, target_sr
+
+def save_as_mp3(audio_array, sr):
+    """Guarda un numpy array de audio como MP3 usando pydub en un archivo temporal."""
+    audio_int16 = (audio_array * 32767).astype(np.int16)
+    audio_segment = AudioSegment(
+        audio_int16.tobytes(),
+        frame_rate=sr,
+        sample_width=2,
+        channels=1
+    )
+    tmp_path = tempfile.mktemp(suffix=".mp3")
+    audio_segment.export(tmp_path, format="mp3")
+    return tmp_path
+
 def separate_audio_stems(input_path):
-    """Carga, separa y guarda los stems de voces y acompañamiento usando pydub en lugar de soundfile."""
+    """Separa el audio en stems (vocals y accompaniment) usando Demucs y pydub."""
     
     # 1. Cargar audio
-    y, sr = librosa.load(input_path, sr=44100, mono=False)
-    if y.ndim == 1:
-        y = np.expand_dims(y, axis=0)  # [canales, samples]
+    y, sr = load_audio_pydub(input_path, target_sr=44100)
+    wav = torch.from_numpy(y).float().unsqueeze(0).unsqueeze(0)  # [1, canales, samples]
 
-    wav = torch.from_numpy(y).float().unsqueeze(0)  # [1, canales, samples]
-
-    # 2. Separación con Demucs (modelo en caché)
-    from demucs.apply import apply_model
+    # 2. Separación con Demucs
     model = get_demucs_model()
     sources = apply_model(model, wav, device="cpu")[0]  # [stems, channels, samples]
 
@@ -85,21 +101,7 @@ def separate_audio_stems(input_path):
     vocals = sources[3].mean(axis=0).numpy()
     accompaniment = (sources[0] + sources[1] + sources[2]).mean(axis=0).numpy()
 
-    # 4. Función auxiliar para guardar como MP3 usando pydub
-    def save_as_mp3(audio_array, sr):
-        # Normalizar a int16
-        audio_int16 = (audio_array * 32767).astype(np.int16)
-        audio_segment = AudioSegment(
-            audio_int16.tobytes(),
-            frame_rate=sr,
-            sample_width=2,  # 16-bit
-            channels=1 if audio_array.ndim == 1 else audio_array.shape[0]
-        )
-        tmp_path = tempfile.mktemp(suffix=".mp3")
-        audio_segment.export(tmp_path, format="mp3")
-        return tmp_path
-
-    # 5. Guardar stems
+    # 4. Guardar stems como MP3
     vocals_path = save_as_mp3(vocals, sr)
     music_path = save_as_mp3(accompaniment, sr)
 
