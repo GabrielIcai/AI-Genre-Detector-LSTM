@@ -17,7 +17,7 @@ st.set_page_config(page_title="LALAAI", layout="wide")
 
 # =========================================================
 # === 1. CARGA DINÁMICA DE MÓDULOS DE PROCESAMIENTO (AI) ===
-# =========================================================
+# ============================================s=============
 
 # ... (El código de load_module_dynamically y la carga de predict_song, etc., se mantiene igual) ...
 
