@@ -12,6 +12,11 @@ import librosa
 import soundfile as sf
 from demucs.pretrained import get_model
 from demucs.apply import apply_model
+from pydub import AudioSegment
+import numpy as np
+import tempfile
+import torch
+import librosa
 
 st.set_page_config(page_title="LALAAI", layout="wide")
 
@@ -62,26 +67,38 @@ def get_demucs_model(model_name="htdemucs"):
     return get_model(model_name).to("cpu").eval()
 
 def separate_audio_stems(input_path):
-    """Carga, separa y guarda los stems de voces y acompañamiento."""
+    """Carga, separa y guarda los stems de voces y acompañamiento sin usar soundfile."""
     
     # 1. Cargar audio
     y, sr = librosa.load(input_path, sr=44100, mono=False)
     if y.ndim == 1:
-        y = np.expand_dims(y, axis=0) 
+        y = np.expand_dims(y, axis=0)  # [canales, samples]
 
-    wav = torch.from_numpy(y).float().unsqueeze(0) 
+    wav = torch.from_numpy(y).float().unsqueeze(0)  # [1, canales, samples]
 
-    # 2. Separación con Demucs 
+    # 2. Separación con Demucs (modelo en caché)
     model = get_demucs_model()
-    sources = apply_model(model, wav, device="cpu")[0] 
+    sources = apply_model(model, wav, device="cpu")[0]  # [stems, channels, samples]
+
     vocals = sources[3].mean(axis=0).numpy()
     accompaniment = (sources[0] + sources[1] + sources[2]).mean(axis=0).numpy()
 
-    # 3. Guardar archivos temporales
-    vocals_path = tempfile.mktemp(suffix=".mp3") 
-    music_path = tempfile.mktemp(suffix=".mp3")
-    sf.write(vocals_path, vocals, sr)
-    sf.write(music_path, accompaniment, sr)
+    # 3. Guardar archivos temporales como MP3 usando pydub
+    def save_as_mp3(audio_array, sr):
+        # Normalizar a int16
+        audio_int16 = (audio_array * 32767).astype(np.int16)
+        audio_segment = AudioSegment(
+            audio_int16.tobytes(),
+            frame_rate=sr,
+            sample_width=2,  # 16-bit
+            channels=1 if audio_array.ndim == 1 else audio_array.shape[0]
+        )
+        tmp_path = tempfile.mktemp(suffix=".mp3")
+        audio_segment.export(tmp_path, format="mp3")
+        return tmp_path
+
+    vocals_path = save_as_mp3(vocals, sr)
+    music_path = save_as_mp3(accompaniment, sr)
 
     return vocals_path, music_path, sr
 
