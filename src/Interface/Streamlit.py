@@ -67,7 +67,7 @@ def get_demucs_model(model_name="htdemucs"):
     return get_model(model_name).to("cpu").eval()
 
 def separate_audio_stems(input_path):
-    """Carga, separa y guarda los stems de voces y acompañamiento sin usar soundfile."""
+    """Carga, separa y guarda los stems de voces y acompañamiento usando pydub en lugar de soundfile."""
     
     # 1. Cargar audio
     y, sr = librosa.load(input_path, sr=44100, mono=False)
@@ -77,13 +77,15 @@ def separate_audio_stems(input_path):
     wav = torch.from_numpy(y).float().unsqueeze(0)  # [1, canales, samples]
 
     # 2. Separación con Demucs (modelo en caché)
+    from demucs.apply import apply_model
     model = get_demucs_model()
     sources = apply_model(model, wav, device="cpu")[0]  # [stems, channels, samples]
 
+    # 3. Crear stems
     vocals = sources[3].mean(axis=0).numpy()
     accompaniment = (sources[0] + sources[1] + sources[2]).mean(axis=0).numpy()
 
-    # 3. Guardar archivos temporales como MP3 usando pydub
+    # 4. Función auxiliar para guardar como MP3 usando pydub
     def save_as_mp3(audio_array, sr):
         # Normalizar a int16
         audio_int16 = (audio_array * 32767).astype(np.int16)
@@ -97,6 +99,7 @@ def separate_audio_stems(input_path):
         audio_segment.export(tmp_path, format="mp3")
         return tmp_path
 
+    # 5. Guardar stems
     vocals_path = save_as_mp3(vocals, sr)
     music_path = save_as_mp3(accompaniment, sr)
 
