@@ -2,3 +2,4 @@
 * text=auto
 Final[[:space:]]model/best_CRNN_genre_5_2.pth filter=lfs diff=lfs merge=lfs -text
 Final[[:space:]]model/*.pth filter=lfs diff=lfs merge=lfs -text
+Final[[:space:]]model/CRNN_5_genre_2.pth filter=lfs diff=lfs merge=lfs -text
