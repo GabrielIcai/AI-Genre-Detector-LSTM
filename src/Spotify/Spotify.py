@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(
-    client_id=os.getenv("SPOTIPY_CLIENT_ID"),
-    client_secret=os.getenv("SPOTIPY_CLIENT_SECRET"),
+    client_id=st.secrets["SPOTIPY_CLIENT_ID"],
+    client_secret=st.secrets["SPOTIPY_CLIENT_SECRET"],
 ))
 
 import random
