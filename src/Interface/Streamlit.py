@@ -247,6 +247,14 @@ with left:
         
         # El resto de la lógica de análisis (Predicción y Gráficas) se mantiene igual
         pred_genre, probs_dict = predict_song(audio_path)
+        # ...
+        # Antes de la línea 250:
+        st.write(f"DEBUG: Tipo de 'probs_dict' es: {type(probs_dict)}")
+        st.write(f"DEBUG: Contenido de 'probs_dict' (Inicio): {str(probs_dict)[:100]}")
+        if not isinstance(probs_dict, dict):
+            st.error(f"Error Crítico de Datos: Se esperaba un diccionario, se recibió {type(probs_dict)}.")
+            st.stop() 
+        
         tracks = get_recommended_tracks(probs_dict, total_tracks=3)
         times, rms = calculate_track_energy(audio_path)
         
