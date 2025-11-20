@@ -264,24 +264,20 @@ with left:
         
         with col_genre:
             st.markdown("##### Probabilidades")
-            fig1, ax1 = plt.subplots(figsize=(3.5, 3.5))
+            fig1, ax1 = plt.subplots(figsize=(3.3, 3.3))
             ax1.pie(list(probs_dict.values()), labels=list(probs_dict.keys()),
                     autopct='%1.1f%%', startangle=90,
                     colors=WARM_PALETTE[:len(probs_dict)])
             ax1.set_title("") 
             st.pyplot(fig1, use_container_width=True)
         
-        # 🚨 NUEVO: Gráfico de Barras de Métricas Clave
         with col_metrics:
             st.markdown("##### KEY METRICS")
             
-            # Convertir el diccionario a un DataFrame con pandas
             df_metrics = pd.DataFrame(
                 list(producer_metrics.items()), 
                 columns=['Métrica', 'Valor']
             )
-
-            # Crear el gráfico de barras con plotly
             fig_bar = go.Figure(
                 data=[
                     go.Bar(
