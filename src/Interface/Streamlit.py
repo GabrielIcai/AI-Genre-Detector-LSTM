@@ -273,7 +273,6 @@ with left:
             ax1.set_title("") 
             st.pyplot(fig1, use_container_width=True)
         
-        # 🚨 NUEVO: Gráfico de Barras de Métricas Clave
         with col_metrics:
             st.markdown("##### KEY METRICS")
             
@@ -305,7 +304,7 @@ with left:
                 paper_bgcolor="#f7f7f7",
                 yaxis=dict(range=[0, 100], title="Relative Punctuation(0-100)"),
                 xaxis_title=None,)
-            )
+            
             st.plotly_chart(fig_bar, use_container_width=True)
 
         # 4. GRÁFICA DE ENERGÍA (RMS)
