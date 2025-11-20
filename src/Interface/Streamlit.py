@@ -183,7 +183,6 @@ def create_radar_chart(user_metrics: dict, target_genre: str):
                 visible=True,
                 range=[0, 100]
             )),
-        showlegend=True,
         height=450,
         margin=dict(l=50, r=50, t=50, b=50),
         plot_bgcolor="white",  
