@@ -324,8 +324,7 @@ with left:
             height=380, 
             margin=dict(l=10, r=10, t=10, b=10), 
             paper_bgcolor="white",
-            plot_bgcolor="white", 
-            title=dict(text="Energy Analysis over Time (t)", font=dict(size=14, color="#333")),
+            plot_bgcolor="white",
             xaxis_title="Time (s)", yaxis_title="Amplitud RMS", showlegend=False
         )
         st.plotly_chart(fig, use_container_width=True)
