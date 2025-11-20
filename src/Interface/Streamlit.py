@@ -54,14 +54,13 @@ except Exception as e:
     # Define funciones dummy para evitar que el código falle si hay error
     def calculate_track_energy(path): return np.linspace(0, 10, 400), np.sin(np.linspace(0, 10, 400)) * np.exp(-np.linspace(0, 10, 400)/5)
     def predict_song(path): return "Deep House", {"Deep House": 0.6, "Progressive House": 0.3, "Ambient": 0.1}
-    # Nuevo dummy para la métrica
-    def calculate_producer_metrics(path): return {"Energía RMS": 45, "Brillo (Centroide)": 55, "Energía de Graves (<80Hz)": 30, "Rango Dinámico (DR)": 70}
+    # CORRECCIÓN: Se usan las claves simplificadas que coinciden con GENRE_TARGETS
+    def calculate_producer_metrics(path): return {"RMS": 45, "Centroid": 55, "Lows": 30, "DR": 70}
 
 
 # =========================================================
 # === 2. FUNCIÓN DE SEPARACIÓN (DEMUCS) - CORREGIDA ===
 # =========================================================
-# Estas funciones se ejecutan rápidamente porque se cargan solo una vez (cache_resource)
 @st.cache_resource
 def get_demucs_model(model_name="htdemucs"):
     """Carga el modelo Demucs una sola vez y lo guarda en caché."""
@@ -81,7 +80,7 @@ def separate_audio_stems(input_path):
     model = get_demucs_model()
     sources = apply_model(model, wav, device="cpu")[0]  
     vocals = sources[3].mean(axis=0).numpy()
-    accompaniment = (sources[0] + sources[1] + sources[2]).mean(axis=0).numpy() 
+    accompaniment = (sources[0] + sources[1] + sources[2]).mean(axis=0).numpy()  
     vocals_path = save_as_mp3(vocals, sr)
     music_path = save_as_mp3(accompaniment, sr)
     return vocals_path, music_path, sr
@@ -144,6 +143,7 @@ def create_radar_chart(user_metrics: dict, target_genre: str):
     
     categories = list(target_metrics.keys()) 
 
+    # Aquí es donde se usa .get(k, 0). Si las claves no coinciden, devuelve 0.
     user_data = [user_metrics.get(k, 0) for k in categories] 
     target_data = list(target_metrics.values())
 
@@ -198,88 +198,88 @@ def create_radar_chart(user_metrics: dict, target_genre: str):
 # NOTA: Todo el CSS está aquí. No se ha perdido. Solo hay que asegurar que Streamlit lo inyecte.
 st.markdown("""
 <style>
-    /* ---------------------- ANULACIÓN DE COLOR PRIMARIO DE STREAMLIT ---------------------- */  
-    :root {
-        --primary-color: #ffd700;
-        --primary-text-color: #000000;
-        --primary-background-color: #ffb300;  
-    }  
-    div.stButton > button[data-testid*="stButton"] {
-        background-color: var(--primary-color) !important;
-        color: var(--primary-text-color) !important;
-        border-color: var(--primary-background-color) !important;
-        font-weight: bold;
-    }  
-    div.stButton > button[data-testid*="stButton"]:hover {
-        background-color: var(--primary-background-color) !important;
-        border-color: #ff9900 !important;
-    }
-    /* Contenedor principal del st.info */
-    div[data-testid="stAlert"] [data-baseweb="button"] {
-        background-color: #fff7e6 !important; 
-        color: #333333 !important; 
-        border-left-color: #ffb300 !important; 
-    }
-    div[data-testid="stAlert"] [data-baseweb="button"] svg {
-        fill: #ffb300 !important;  
-    }  
-    /* CARD STYLE */
-    .card {
-        background-color: #f7f7f7;
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
-    /* UPLOAD BOX */
-    .upload-box {
-        height: 280px;
-        border: 3px dashed #ffb300;
-        border-radius: 10px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 18px;
-        color: #888;
-        background-color: #fff7e6;
-        margin-top: 10px;
-        margin-bottom: 20px;
-    }
-    /* NAVBAR */
-    .top-bar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        z-index: 9999;
-        background: linear-gradient(90deg, #ffd700, #ffb300);
-        padding: 18px 40px;
-        font-size: 22px;
-        font-weight: 600;
-        color: #000;
-        border-radius: 0 0 15px 15px;
-        box-shadow: 0px 3px 10px rgba(0,0,0,0.15);
-    }  
-    /* LIMPIEZA */
-    .main > div {
-        padding-top: 0 !important;
-        margin-top: 0 !important;
-        background: transparent !important;
-        box-shadow: none !important;
-    }
-    header, .st-emotion-cache-18ni7ap {
-        display: none !important;
-        visibility: hidden !important;
-        height: 0 !important;
-    }
-    section[data-testid="stSidebar"] {
-        padding-top: 0 !important;
-        margin-top: 0 !important;
-    }
-    .block-container {
-        padding-top: 0 !important; 
-        margin-top: 1px !important;  
-    }
+    /* ---------------------- ANULACIÓN DE COLOR PRIMARIO DE STREAMLIT ---------------------- */  
+    :root {
+        --primary-color: #ffd700;
+        --primary-text-color: #000000;
+        --primary-background-color: #ffb300;  
+    }  
+    div.stButton > button[data-testid*="stButton"] {
+        background-color: var(--primary-color) !important;
+        color: var(--primary-text-color) !important;
+        border-color: var(--primary-background-color) !important;
+        font-weight: bold;
+    }  
+    div.stButton > button[data-testid*="stButton"]:hover {
+        background-color: var(--primary-background-color) !important;
+        border-color: #ff9900 !important;
+    }
+    /* Contenedor principal del st.info */
+    div[data-testid="stAlert"] [data-baseweb="button"] {
+        background-color: #fff7e6 !important; 
+        color: #333333 !important; 
+        border-left-color: #ffb300 !important; 
+    }
+    div[data-testid="stAlert"] [data-baseweb="button"] svg {
+        fill: #ffb300 !important;  
+    }  
+    /* CARD STYLE */
+    .card {
+        background-color: #f7f7f7;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    /* UPLOAD BOX */
+    .upload-box {
+        height: 280px;
+        border: 3px dashed #ffb300;
+        border-radius: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 18px;
+        color: #888;
+        background-color: #fff7e6;
+        margin-top: 10px;
+        margin-bottom: 20px;
+    }
+    /* NAVBAR */
+    .top-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 9999;
+        background: linear-gradient(90deg, #ffd700, #ffb300);
+        padding: 18px 40px;
+        font-size: 22px;
+        font-weight: 600;
+        color: #000;
+        border-radius: 0 0 15px 15px;
+        box-shadow: 0px 3px 10px rgba(0,0,0,0.15);
+    }  
+    /* LIMPIEZA */
+    .main > div {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+    header, .st-emotion-cache-18ni7ap {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+    }
+    section[data-testid="stSidebar"] {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+    }
+    .block-container {
+        padding-top: 0 !important; 
+        margin-top: 1px !important;  
+    }
 
 </style>
 """, unsafe_allow_html=True)
@@ -384,10 +384,23 @@ with left:
             
             if view_mode == "Key Metrics(Bars)":
                 # --- VISTA DE BARRAS ---
+                # NOTA: Aquí se usa el DataFrame con las CLAVES ORIGINALES del diccionario (RMS, Centroid, etc.)
+                # Pero la columna 'Métrica' se debe mapear si quieres los nombres largos en las barras.
+                
+                # Para mostrar nombres más descriptivos en las barras, mapearemos las claves:
+                metric_names = {
+                    "RMS": "Energía RMS",
+                    "Centroid": "Brillo (Centroide)",
+                    "Lows": "Energía de Graves (<80Hz)",
+                    "DR": "Rango Dinámico (DR)"
+                }
+                
+                # Creamos el DataFrame usando las claves cortas, y luego mapeamos a nombres largos para la visualización.
                 df_metrics = pd.DataFrame(
                     list(producer_metrics.items()), 
-                    columns=['Métrica', 'Valor']
+                    columns=['Clave', 'Valor'] # Cambiamos el nombre de la columna para evitar confusión
                 )
+                df_metrics['Métrica'] = df_metrics['Clave'].map(metric_names)
 
                 fig_bar = go.Figure(
                     data=[
@@ -414,6 +427,7 @@ with left:
             
             elif view_mode == "Genre Comparison":
                 # --- VISTA RADAR ---
+                # Esta vista ahora funciona porque 'producer_metrics' usa las claves cortas (RMS, Centroid...)
                 fig_radar = create_radar_chart(producer_metrics, pred_genre)
                 st.plotly_chart(fig_radar, use_container_width=True)
 
