@@ -23,7 +23,17 @@ st.set_page_config(page_title="LALAAI", layout="wide")
 # === 1. CARGA DINÁMICA DE MÓDULOS DE PROCESAMIENTO (AI) ===
 # ============================================s=============
 
-# ... (El código de load_module_dynamically y la carga de predict_song, etc., se mantiene igual) ...
+@st.cache_resource
+def load_spotify_client(spotify_module):
+    """Carga y cachea el cliente de Spotify usando las secrets de Streamlit."""
+    client_id = st.secrets.get("SPOTIPY_CLIENT_ID")
+    client_secret = st.secrets.get("SPOTIPY_CLIENT_SECRET")
+    
+    if not client_id or not client_secret:
+        st.error("Error de configuración: No se encontraron las credenciales de Spotify en st.secrets.")
+        return None
+    
+    return spotify_module.get_spotify_client(client_id, client_secret)
 
 # Función auxiliar para cargar módulos dinámicamente
 def load_module_dynamically(module_name, relative_path):
@@ -42,6 +52,11 @@ try:
     energy_module = load_module_dynamically("energy_module", '../Energy/energy.py')
     calculate_track_energy = energy_module.calculate_track_energy
     
+    spotify_module = load_module_dynamically("spotify_module", '../Spotify/Spotify.py')
+    get_recommended_tracks = spotify_module.get_recommended_tracks
+    
+    # NUEVO: Inicializar el cliente una sola vez
+    spotify_client = load_spotify_client(spotify_module)
     spotify_module = load_module_dynamically("spotify_module", '../Spotify/Spotify.py')
     get_recommended_tracks = spotify_module.get_recommended_tracks
     
