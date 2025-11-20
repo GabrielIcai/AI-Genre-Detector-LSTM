@@ -4,9 +4,36 @@ import os
 import soundfile as sf
 import pandas as pd
 import plotly.graph_objects as go
+from scipy.signal import butter, lfilter
+# Añade esta función auxiliar DENTRO de tu archivo '../Metricas/metrica.py'
 
+def bandpass_filter(data, lowcut, highcut, sr, order=5):
+    """Implementa un filtro digital Butterworth de paso de banda."""
+    nyq = 0.5 * sr
+    low = lowcut / nyq
+    high = highcut / nyq
+    # 1. Diseñar el filtro (Butterworth)
+    b, a = butter(order, [low, high], btype='band')
+    # 2. Aplicar el filtro (lfilter)
+    y = lfilter(b, a, data)
+    return y
 
 def calculate_producer_metrics(audio_path):
+    # ... (el resto de tu código de carga y otras métricas) ...
+
+    # --- 3. Energía de Graves (80Hz) ---
+    # 🚨 REEMPLAZO DEL CÓDIGO CON ERROR
+    y_bass = bandpass_filter(y, lowcut=20, highcut=80, sr=sr)
+    
+    # ... (el resto del cálculo se mantiene igual) ...
+    bass_rms_linear = librosa.feature.rms(y=y_bass)[0]
+    bass_energy_db = 20 * np.log10(np.mean(bass_rms_linear) + 1e-6)
+    bass_energy_scaled = np.clip(bass_energy_db + 60, 0, 60) # Escala similar a RMS
+
+    # ... (el resto de la función) ...
+
+def calculate_producer_metrics(audio_path):
+    
     """
     Calcula 4 métricas clave de producción musical utilizando librerías existentes.
     """
@@ -51,10 +78,10 @@ def calculate_producer_metrics(audio_path):
     centroid_scaled = np.clip(centroid_mean / 50, 0, 100) # Escala de 0 a 100
 
     # 3. Energía de Graves (<80Hz)
-    y_bass = librosa.effects.bandpass(y, sr=sr, freq_min=20, freq_max=80)
+    y_bass = bandpass_filter(y, lowcut=20, highcut=80, sr=sr)
     bass_rms_linear = librosa.feature.rms(y=y_bass)[0]
     bass_energy_db = 20 * np.log10(np.mean(bass_rms_linear) + 1e-6)
-    bass_energy_scaled = np.clip(bass_energy_db + 60, 0, 60) # Escala de 0 a 60
+    bass_energy_scaled = np.clip(bass_energy_db + 60, 0, 60) # Escala similar a RMS# Escala de 0 a 60
 
     # 4. Rango Dinámico (DR)
     peak_amplitude = np.max(np.abs(y))
