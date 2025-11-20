@@ -264,7 +264,7 @@ with left:
         
         with col_genre:
             st.markdown("##### Probabilidades")
-            fig1, ax1 = plt.subplots(figsize=(4, 4))
+            fig1, ax1 = plt.subplots(figsize=(3.5, 3.5))
             ax1.pie(list(probs_dict.values()), labels=list(probs_dict.keys()),
                     autopct='%1.1f%%', startangle=90,
                     colors=WARM_PALETTE[:len(probs_dict)])
