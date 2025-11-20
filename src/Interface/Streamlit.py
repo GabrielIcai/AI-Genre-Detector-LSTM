@@ -16,7 +16,7 @@ import numpy as np
 import tempfile
 import torch
 import librosa
-import pandas as pd # <--- Necesario para la gráfica de barras
+import pandas as pd 
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="LALAAI", layout="wide")
@@ -45,13 +45,12 @@ try:
     
     # Se añade la carga de Métricas
     metrics_module = load_module_dynamically("metrics_module", '../metricas/metricas.py')
-    calculate_producer_metrics = metrics_module.calculate_producer_metrics # <--- Nueva función
+    calculate_producer_metrics = metrics_module.calculate_producer_metrics 
     
     predict_module = load_module_dynamically("ai_model_predict", '../AI-Model/predict.py')
     predict_song = predict_module.predict_song
 
 except Exception as e:
-    # st.error(f"Error al cargar módulos de AI/Métricas: {e}") # Comentado para no detener la UI
     # Define funciones dummy para evitar que el código falle si hay error
     def calculate_track_energy(path): return np.linspace(0, 10, 400), np.sin(np.linspace(0, 10, 400)) * np.exp(-np.linspace(0, 10, 400)/5)
     def predict_song(path): return "Deep House", {"Deep House": 0.6, "Progressive House": 0.3, "Ambient": 0.1}
@@ -62,41 +61,32 @@ except Exception as e:
 # =========================================================
 # === 2. FUNCIÓN DE SEPARACIÓN (DEMUCS) - CORREGIDA ===
 # =========================================================
-
-# Manteniendo las funciones de Demucs aquí como en tu código original para la revisión
+# Estas funciones se ejecutan rápidamente porque se cargan solo una vez (cache_resource)
 @st.cache_resource
 def get_demucs_model(model_name="htdemucs"):
     """Carga el modelo Demucs una sola vez y lo guarda en caché."""
     return get_model(model_name).to("cpu").eval()
 
 def load_audio_pydub(path, target_sr=44100):
-    """Carga cualquier audio (MP3/WAV) usando pydub y devuelve np.array estéreo [2, Samples] normalizado y sample rate."""
-    
     audio = AudioSegment.from_file(path)
     audio = audio.set_channels(2).set_frame_rate(target_sr)
     samples = np.array(audio.get_array_of_samples()).astype(np.float32)
     y = samples.reshape((-1, 2)).T / 32768.0
     y = y.astype(np.float32)
-
     return y, target_sr
 
 def separate_audio_stems(input_path):
-    """Separa el audio en stems (vocals y accompaniment) usando Demucs y pydub."""
-    
     y, sr = load_audio_pydub(input_path, target_sr=44100)
     wav = torch.from_numpy(y).float().unsqueeze(0)  
-
     model = get_demucs_model()
-    sources = apply_model(model, wav, device="cpu")[0]  # [stems, 2, samples]
-    vocals = sources[3].mean(axis=0).numpy() # Mono [Samples]
-    accompaniment = (sources[0] + sources[1] + sources[2]).mean(axis=0).numpy() # Mono [Samples]
+    sources = apply_model(model, wav, device="cpu")[0]  
+    vocals = sources[3].mean(axis=0).numpy()
+    accompaniment = (sources[0] + sources[1] + sources[2]).mean(axis=0).numpy() 
     vocals_path = save_as_mp3(vocals, sr)
     music_path = save_as_mp3(accompaniment, sr)
-
     return vocals_path, music_path, sr
 
 def save_as_mp3(audio_array, sr):
-    """Guarda un numpy array de audio como MP3 usando pydub en un archivo temporal."""
     audio_int16 = (audio_array * 32767).astype(np.int16)
     audio_segment = AudioSegment(
         audio_int16.tobytes(),
@@ -152,10 +142,10 @@ def create_radar_chart(user_metrics: dict, target_genre: str):
     """
     target_metrics = GENRE_TARGETS.get(target_genre, GENRE_TARGETS["Deep House"]) 
     
-    # Definir las 4 CATEGORÍAS FIJAS (usando las claves del target para asegurar el orden y la longitud)
+    # Definir las 4 CATEGORÍAS FIJAS
     categories = list(target_metrics.keys()) 
 
-    # Asegurarse de que los datos del usuario coincidan con el orden y usar 0 si falta alguna métrica.
+    # Asegurarse de que los datos del usuario coincidan con el orden
     user_data = [user_metrics.get(k, 0) for k in categories] 
     target_data = list(target_metrics.values())
 
@@ -212,14 +202,11 @@ def create_radar_chart(user_metrics: dict, target_genre: str):
 st.markdown("""
 <style>
     /* ---------------------- ANULACIÓN DE COLOR PRIMARIO DE STREAMLIT ---------------------- */  
-    /* Definición de variables primarias (esto debería funcionar si Streamlit las respeta) */
     :root {
         --primary-color: #ffd700;
         --primary-text-color: #000000;
         --primary-background-color: #ffb300;  
     }  
-    /* **CORRECCIÓN:** Selector ultra-específico para el botón st.button(type="primary") */
-    /* Apuntamos al contenedor específico con la clase 'primary' que Streamlit aplica */
     div.stButton > button[data-testid*="stButton"] {
         background-color: var(--primary-color) !important;
         color: var(--primary-text-color) !important;
@@ -230,21 +217,16 @@ st.markdown("""
         background-color: var(--primary-background-color) !important;
         border-color: #ff9900 !important;
     }
-    
-    /* Contenedor principal del st.info (ya estaba bien) */
+    /* Contenedor principal del st.info */
     div[data-testid="stAlert"] [data-baseweb="button"] {
-        background-color: #fff7e6 !important; /* Fondo amarillo claro */
-        color: #333333 !important; /* Texto gris oscuro */
-        border-left-color: #ffb300 !important; /* Barra lateral amarilla */
+        background-color: #fff7e6 !important; 
+        color: #333333 !important; 
+        border-left-color: #ffb300 !important; 
     }
-    
-    /* Icono del st.info (ya estaba bien) */
     div[data-testid="stAlert"] [data-baseweb="button"] svg {
         fill: #ffb300 !important;  
     }  
-    /* [RESTO DE TUS ESTILOS DE CARD, UPLOAD, NAVBAR Y LIMPIEZA...] */
-    
-    /* CARD STYLE ADDED FOR CLEAN LOOK */
+    /* CARD STYLE */
     .card {
         background-color: #f7f7f7;
         border-radius: 12px;
@@ -252,9 +234,7 @@ st.markdown("""
         margin-bottom: 20px;
         box-shadow: 0 4px 10px rgba(0,0,0,0.05);
     }
-    
-    /* UPLOAD BOX FOR EMPTY STATE */
-    /* Se aplica al contenedor del file_uploader cuando está vacío */
+    /* UPLOAD BOX */
     .upload-box {
         height: 280px;
         border: 3px dashed #ffb300;
@@ -268,7 +248,6 @@ st.markdown("""
         margin-top: 10px;
         margin-bottom: 20px;
     }
-    
     /* NAVBAR */
     .top-bar {
         position: fixed;
@@ -284,36 +263,24 @@ st.markdown("""
         border-radius: 0 0 15px 15px;
         box-shadow: 0px 3px 10px rgba(0,0,0,0.15);
     }  
-    .centered-content {
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;  
-    }
-    
-    /* ---------------------- LIMPIEZA Y AJUSTES ---------------------- */
-    /* REMOVE STREAMLIT DEFAULT PADDING & WHITE BLOCKS (CORREGIDO) */
+    /* LIMPIEZA */
     .main > div {
         padding-top: 0 !important;
         margin-top: 0 !important;
         background: transparent !important;
         box-shadow: none !important;
     }
-    /* REMOVE STREAMLIT DEFAULT HEADER */
     header, .st-emotion-cache-18ni7ap {
         display: none !important;
         visibility: hidden !important;
         height: 0 !important;
     }
-    
-    /* FIX SIDEBAR SHIFT */
     section[data-testid="stSidebar"] {
         padding-top: 0 !important;
         margin-top: 0 !important;
     }
-    /* FINAL FIX: SET EXACT SPACE BETWEEN NAVBAR AND FIRST ELEMENT */
     .block-container {
-        padding-top: 0 !important; /* Asegura que el contenedor no tenga padding superior */
+        padding-top: 0 !important; 
         margin-top: 1px !important;  
     }
 
@@ -327,11 +294,11 @@ st.markdown("<div class='top-bar'>Prod.AI — Music Genre Detector & Stem Splitt
 
 # ------------ LAYOUT -------------
 left, right = st.columns([2, 1], gap="large")
+# Inicialización de todos los estados de sesión necesarios
 if 'audio_path' not in st.session_state:
     st.session_state.audio_path = None
 if 'stem_results' not in st.session_state:
     st.session_state.stem_results = None
-# Nuevos estados para almacenar resultados y evitar recálculos
 if 'pred_genre' not in st.session_state:
     st.session_state.pred_genre = None
 if 'producer_metrics' not in st.session_state:
@@ -351,119 +318,127 @@ with left:
 
     audio = st.file_uploader(" ", type=["mp3","wav","m4a"], label_visibility="collapsed")
 
-    # 1. Lógica para CARGAR y CALCULAR (Solo se ejecuta si se sube un archivo nuevo)
-    if audio:
-        # 1.1. Si el archivo es nuevo, calcular y guardar en session_state
-        if st.session_state.audio_path is None or st.session_state.audio_path != audio.name:
-            with tempfile.NamedTemporaryFile(delete=False, suffix=f".{audio.type.split('/')[-1]}") as tmp_file:
-                tmp_file.write(audio.read())
-                audio_path = tmp_file.name
-                
-            # CÁLCULOS PESADOS
-            with st.spinner("Analyzing music and calculating metrics..."):
-                pred_genre, probs_dict = predict_song(audio_path)
-                times, rms = calculate_track_energy(audio_path)
-                producer_metrics = calculate_producer_metrics(audio_path)
-
-            # GUARDAR EN ESTADO DE SESIÓN (para evitar recálculos)
-            st.session_state.audio_path = audio_path
-            st.session_state.pred_genre = pred_genre
-            st.session_state.probs_dict = probs_dict
-            st.session_state.producer_metrics = producer_metrics
-            st.session_state.times = times
-            st.session_state.rms = rms
-            st.session_state.stem_results = None # Resetear stems si el audio es nuevo
+    # --- LÓGICA CLAVE PARA EVITAR RECARGAS PESADAS ---
+    
+    # Condición 1: Se subió un archivo y **AÚN NO** se han guardado los resultados en session_state
+    if audio is not None and st.session_state.pred_genre is None:
         
-        # 1.2. Usar los datos de session_state
-        if st.session_state.pred_genre:
-            pred_genre = st.session_state.pred_genre
-            probs_dict = st.session_state.probs_dict
-            producer_metrics = st.session_state.producer_metrics
-            times = st.session_state.times
-            rms = st.session_state.rms
-            
-            st.header(f"  Genre Detected: **{pred_genre}**")
-            
-            # 2. GRÁFICA DE DONUT Y CONTENEDOR DE MÉTRICAS
-            col_genre, col_spacer, col_metrics = st.columns([1.5, 0.1, 1]) 
-            
-            with col_genre:
-                st.markdown("##### Probabilidades")
-                fig1, ax1 = plt.subplots(figsize=(4, 4))
-                ax1.pie(list(probs_dict.values()), labels=list(probs_dict.keys()),
-                        autopct='%1.1f%%', startangle=90,
-                        colors=WARM_PALETTE[:len(probs_dict)])
-                ax1.set_title("") 
-                st.pyplot(fig1, use_container_width=True)
-            
-            # 3. ALTERNANCIA DE GRÁFICOS DE MÉTRICAS (Barras vs. Radar)
-            with col_metrics:
-                st.markdown("##### Visualización de Métricas")
-                
-                # --- SELECTBOX PARA ALTERNAR VISTA (DESPLEGABLE) ---
-                view_mode = st.selectbox(
-                    "Select View:",
-                    ("Métricas Clave (Barras)", "Comparativa Género (Radar)"),
-                    label_visibility="collapsed",
-                    key="metric_view"
-                )
-                
-                # --- LÓGICA DE VISUALIZACIÓN ---
-                
-                if view_mode == "Métricas Clave (Barras)":
-                    # --- VISTA DE BARRAS (EXISTENTE) ---
-                    df_metrics = pd.DataFrame(
-                        list(producer_metrics.items()), 
-                        columns=['Métrica', 'Valor']
-                    )
+        # Guardar archivo temporalmente para su procesamiento
+        with tempfile.NamedTemporaryFile(delete=False, suffix=f".{audio.type.split('/')[-1]}") as tmp_file:
+            tmp_file.write(audio.read())
+            audio_path = tmp_file.name
+        
+        # CÁLCULOS PESADOS (SÓLO AQUÍ)
+        with st.spinner("Analyzing music and calculating metrics..."):
+            pred_genre, probs_dict = predict_song(audio_path)
+            times, rms = calculate_track_energy(audio_path)
+            producer_metrics = calculate_producer_metrics(audio_path)
 
-                    fig_bar = go.Figure(
-                        data=[
-                            go.Bar(
-                                x=df_metrics['Métrica'],
-                                y=df_metrics['Valor'],
-                                marker_color=WARM_PALETTE[:len(df_metrics)],
-                                text=[f"{v:.1f}" for v in df_metrics['Valor']],
-                                textposition='auto',
-                                width=0.9 
-                            )
-                        ]
-                    )
-
-                    fig_bar.update_layout(
-                        height=300, 
-                        margin=dict(l=10, r=10, t=20, b=10),
-                        plot_bgcolor="white", 
-                        paper_bgcolor="white",
-                        yaxis=dict(range=[0, 100], title="Relative Punctuation(0-100)"),
-                        xaxis_title=None
-                    )
-                    st.plotly_chart(fig_bar, use_container_width=True)
-                
-                elif view_mode == "Comparativa Género (Radar)":
-                    # --- VISTA RADAR (NUEVA) ---
-                    fig_radar = create_radar_chart(producer_metrics, pred_genre)
-                    st.plotly_chart(fig_radar, use_container_width=True)
+        # GUARDAR EN ESTADO DE SESIÓN
+        st.session_state.audio_path = audio_path
+        st.session_state.pred_genre = pred_genre
+        st.session_state.probs_dict = probs_dict
+        st.session_state.producer_metrics = producer_metrics
+        st.session_state.times = times
+        st.session_state.rms = rms
+        st.session_state.stem_results = None # Resetear stems si el audio es nuevo
+        
+        # Forzar un rerun LIGERO para que el resto del script se cargue usando los datos guardados
+        st.experimental_rerun() 
 
 
-            # 4. GRÁFICA DE ENERGÍA (RMS)
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(x=times, y=rms, mode="lines", line=dict(color="#ff9900", width=2)))
-            mean_rms = np.mean(rms)
-            fig.add_hline(y=mean_rms, line_dash="dash", line_color="#33AFFF", 
-                        annotation_text=f"Average Energy: {mean_rms:.3f}", 
-                        annotation_position="bottom right", annotation_font_size=10)
-            fig.update_layout(
-                height=380, 
-                margin=dict(l=10, r=10, t=10, b=10), 
-                paper_bgcolor="white",
-                plot_bgcolor="white",
-                xaxis_title="Time (s)", yaxis_title="Amplitud RMS", showlegend=False
+    # Condición 2: Ya existen datos en session_state (ya se calcularon, o se acaban de calcular)
+    if st.session_state.pred_genre is not None:
+        
+        # Recuperar los datos del estado de sesión (¡ES INSTANTÁNEO!)
+        pred_genre = st.session_state.pred_genre
+        probs_dict = st.session_state.probs_dict
+        producer_metrics = st.session_state.producer_metrics
+        times = st.session_state.times
+        rms = st.session_state.rms
+        
+        st.header(f"  Genre Detected: **{pred_genre}**")
+        
+        # 2. GRÁFICA DE DONUT Y CONTENEDOR DE MÉTRICAS
+        col_genre, col_spacer, col_metrics = st.columns([1.5, 0.1, 1]) 
+        
+        with col_genre:
+            st.markdown("##### Probabilidades")
+            fig1, ax1 = plt.subplots(figsize=(4, 4))
+            ax1.pie(list(probs_dict.values()), labels=list(probs_dict.keys()),
+                    autopct='%1.1f%%', startangle=90,
+                    colors=WARM_PALETTE[:len(probs_dict)])
+            ax1.set_title("") 
+            st.pyplot(fig1, use_container_width=True)
+        
+        # 3. ALTERNANCIA DE GRÁFICOS DE MÉTRICAS (Barras vs. Radar)
+        with col_metrics:
+            st.markdown("##### Visualización de Métricas")
+            
+            # --- SELECTBOX PARA ALTERNAR VISTA (DESPLEGABLE) ---
+            view_mode = st.selectbox(
+                "Select View:",
+                ("Métricas Clave (Barras)", "Comparativa Género (Radar)"),
+                label_visibility="collapsed",
+                key="metric_view"
             )
-            st.plotly_chart(fig, use_container_width=True)
             
-    # Si no hay audio, o si el usuario quitó el archivo, mostrar el placeholder
-    if st.session_state.audio_path is None and audio is None:
+            # --- LÓGICA DE VISUALIZACIÓN ---
+            
+            if view_mode == "Métricas Clave (Barras)":
+                # --- VISTA DE BARRAS ---
+                df_metrics = pd.DataFrame(
+                    list(producer_metrics.items()), 
+                    columns=['Métrica', 'Valor']
+                )
+
+                fig_bar = go.Figure(
+                    data=[
+                        go.Bar(
+                            x=df_metrics['Métrica'],
+                            y=df_metrics['Valor'],
+                            marker_color=WARM_PALETTE[:len(df_metrics)],
+                            text=[f"{v:.1f}" for v in df_metrics['Valor']],
+                            textposition='auto',
+                            width=0.9 
+                        )
+                    ]
+                )
+
+                fig_bar.update_layout(
+                    height=300, 
+                    margin=dict(l=10, r=10, t=20, b=10),
+                    plot_bgcolor="white", 
+                    paper_bgcolor="white",
+                    yaxis=dict(range=[0, 100], title="Relative Punctuation(0-100)"),
+                    xaxis_title=None
+                )
+                st.plotly_chart(fig_bar, use_container_width=True)
+            
+            elif view_mode == "Comparativa Género (Radar)":
+                # --- VISTA RADAR ---
+                fig_radar = create_radar_chart(producer_metrics, pred_genre)
+                st.plotly_chart(fig_radar, use_container_width=True)
+
+
+        # 4. GRÁFICA DE ENERGÍA (RMS)
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=times, y=rms, mode="lines", line=dict(color="#ff9900", width=2)))
+        mean_rms = np.mean(rms)
+        fig.add_hline(y=mean_rms, line_dash="dash", line_color="#33AFFF", 
+                    annotation_text=f"Average Energy: {mean_rms:.3f}", 
+                    annotation_position="bottom right", annotation_font_size=10)
+        fig.update_layout(
+            height=380, 
+            margin=dict(l=10, r=10, t=10, b=10), 
+            paper_bgcolor="white",
+            plot_bgcolor="white",
+            xaxis_title="Time (s)", yaxis_title="Amplitud RMS", showlegend=False
+        )
+        st.plotly_chart(fig, use_container_width=True)
+            
+    # Si no hay datos analizados, mostrar el placeholder
+    else:
         st.markdown("<div class='upload-box'>", unsafe_allow_html=True)
         st.write("Drag & drop an audio file here") 
         st.markdown("</div>", unsafe_allow_html=True)
