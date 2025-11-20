@@ -292,7 +292,7 @@ with left:
                         marker_color=WARM_PALETTE[:4], 
                         text=[f"{v:.1f}" for v in df_metrics['Valor']],
                         textposition='auto',
-                        width=0.7 
+                        width=0.9 
                     )
                 ]
             )
@@ -303,9 +303,8 @@ with left:
                 margin=dict(l=10, r=10, t=20, b=10),
                 plot_bgcolor="#f7f7f7", 
                 paper_bgcolor="#f7f7f7",
-                yaxis=dict(range=[0, 100], title="Puntuación Relativa (0-100)"),
-                xaxis_title=None,
-                title=dict(text="Producer Metrics", font=dict(size=10, color="#333"))
+                yaxis=dict(range=[0, 100], title="Relative Punctuation(0-100)"),
+                xaxis_title=None,)
             )
             st.plotly_chart(fig_bar, use_container_width=True)
 
@@ -315,12 +314,12 @@ with left:
         fig.add_trace(go.Scatter(x=times, y=rms, mode="lines", line=dict(color="#ff9900", width=2)))
         mean_rms = np.mean(rms)
         fig.add_hline(y=mean_rms, line_dash="dash", line_color="#33AFFF", 
-                      annotation_text=f"Energía promedio: {mean_rms:.3f}", 
+                      annotation_text=f"Average Energy: {mean_rms:.3f}", 
                       annotation_position="bottom right", annotation_font_size=10)
         fig.update_layout(
             height=280, margin=dict(l=10, r=10, t=10, b=10), paper_bgcolor="#fff7e6",
-            plot_bgcolor="#fff7e6", title=dict(text="Análisis de Energía (RMS) sobre el tiempo", font=dict(size=14, color="#333")),
-            xaxis_title="Tiempo (s)", yaxis_title="Amplitud RMS", showlegend=False
+            plot_bgcolor="#fff7e6", title=dict(text="Energy Analysis over Time (t)", font=dict(size=14, color="#333")),
+            xaxis_title="Time (s)", yaxis_title="Amplitud RMS", showlegend=False
         )
         st.plotly_chart(fig, use_container_width=True)
         
