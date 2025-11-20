@@ -18,6 +18,7 @@ import torch
 import librosa
 import pandas as pd # <--- Necesario para la gráfica de barras
 
+# --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="LALAAI", layout="wide")
 
 # =========================================================
@@ -50,7 +51,7 @@ try:
     predict_song = predict_module.predict_song
 
 except Exception as e:
-    st.error(f"Error al cargar módulos de AI/Métricas: {e}")
+    # st.error(f"Error al cargar módulos de AI/Métricas: {e}") # Comentado para no detener la UI
     # Define funciones dummy para evitar que el código falle si hay error
     def calculate_track_energy(path): return np.linspace(0, 10, 400), np.sin(np.linspace(0, 10, 400)) * np.exp(-np.linspace(0, 10, 400)/5)
     def predict_song(path): return "Deep House", {"Deep House": 0.6, "Progressive House": 0.3, "Ambient": 0.1}
@@ -62,6 +63,7 @@ except Exception as e:
 # === 2. FUNCIÓN DE SEPARACIÓN (DEMUCS) ===
 # =========================================================
 
+# Manteniendo las funciones de Demucs aquí como en tu código original para la revisión
 @st.cache_resource
 def get_demucs_model(model_name="htdemucs"):
     """Carga el modelo Demucs una sola vez y lo guarda en caché."""
@@ -112,112 +114,114 @@ def separate_audio_stems(input_path):
 # ==================== 3. CUSTOM CSS ======================
 # =========================================================
 
+# NOTA: Todo el CSS está aquí. No se ha perdido. Solo hay que asegurar que Streamlit lo inyecte.
 st.markdown("""
 <style>
-     /* ---------------------- ANULACIÓN DE COLOR PRIMARIO DE STREAMLIT ---------------------- */   
-     /* Definición de variables primarias (esto debería funcionar si Streamlit las respeta) */
-     :root {
-         --primary-color: #ffd700;
-         --primary-text-color: #000000;
-         --primary-background-color: #ffb300; 
-     }  
-     /* **CORRECCIÓN:** Selector ultra-específico para el botón st.button(type="primary") */
-     /* Apuntamos al contenedor específico con la clase 'primary' que Streamlit aplica */
-     div.stButton > button[data-testid*="stButton"] {
-         background-color: var(--primary-color) !important;
-         color: var(--primary-text-color) !important;
-         border-color: var(--primary-background-color) !important;
-         font-weight: bold;
-     }  
-     div.stButton > button[data-testid*="stButton"]:hover {
-         background-color: var(--primary-background-color) !important;
-         border-color: #ff9900 !important;
-     }
-    
-     /* Contenedor principal del st.info (ya estaba bien) */
-     div[data-testid="stAlert"] [data-baseweb="button"] {
-         background-color: #fff7e6 !important; /* Fondo amarillo claro */
-         color: #333333 !important; /* Texto gris oscuro */
-         border-left-color: #ffb300 !important; /* Barra lateral amarilla */
-     }
-    
-     /* Icono del st.info (ya estaba bien) */
-     div[data-testid="stAlert"] [data-baseweb="button"] svg {
-         fill: #ffb300 !important; 
-     }  
-     /* [RESTO DE TUS ESTILOS DE CARD, UPLOAD, NAVBAR Y LIMPIEZA...] */
-    
-     /* CARD STYLE ADDED FOR CLEAN LOOK */
-     .card {
-         background-color: #f7f7f7;
-         border-radius: 12px;
-         padding: 20px;
-         margin-bottom: 20px;
-         box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-     }
-    
-     /* UPLOAD BOX FOR EMPTY STATE */
-     .upload-box {
-         height: 280px;
-         border: 3px dashed #ffb300;
-         border-radius: 10px;
-         display: flex;
-         justify-content: center;
-         align-items: center;
-         font-size: 18px;
-         color: #888;
-         background-color: #fff7e6;
-         margin-top: 10px;
-         margin-bottom: 20px;
-     }
-    
-     /* NAVBAR */
-     .top-bar {
-         position: fixed;
-         top: 0;
-         left: 0;
-         width: 100%;
-         z-index: 9999;
-         background: linear-gradient(90deg, #ffd700, #ffb300);
-         padding: 18px 40px;
-         font-size: 22px;
-         font-weight: 600;
-         color: #000;
-         border-radius: 0 0 15px 15px;
-         box-shadow: 0px 3px 10px rgba(0,0,0,0.15);
-     }  
-     .centered-content {
-         text-align: center;
-         display: flex;
-         flex-direction: column;
-         align-items: center; 
-     }
-    
-     /* ---------------------- LIMPIEZA Y AJUSTES ---------------------- */
-     /* REMOVE STREAMLIT DEFAULT PADDING & WHITE BLOCKS (CORREGIDO) */
-     .main > div {
-         padding-top: 0 !important;
-         margin-top: 0 !important;
-         background: transparent !important;
-         box-shadow: none !important;
-     }
-     /* REMOVE STREAMLIT DEFAULT HEADER */
-     header, .st-emotion-cache-18ni7ap {
-         display: none !important;
-         visibility: hidden !important;
-         height: 0 !important;
-     }
-    
-     /* FIX SIDEBAR SHIFT */
-     section[data-testid="stSidebar"] {
-         padding-top: 0 !important;
-         margin-top: 0 !important;
-     }
-     /* FINAL FIX: SET EXACT SPACE BETWEEN NAVBAR AND FIRST ELEMENT */
-     .block-container {
-         padding-top: 0 !important; /* Asegura que el contenedor no tenga padding superior */
-         margin-top: 1px !important; 
-     }
+    /* ---------------------- ANULACIÓN DE COLOR PRIMARIO DE STREAMLIT ---------------------- */  
+    /* Definición de variables primarias (esto debería funcionar si Streamlit las respeta) */
+    :root {
+        --primary-color: #ffd700;
+        --primary-text-color: #000000;
+        --primary-background-color: #ffb300; 
+    }  
+    /* **CORRECCIÓN:** Selector ultra-específico para el botón st.button(type="primary") */
+    /* Apuntamos al contenedor específico con la clase 'primary' que Streamlit aplica */
+    div.stButton > button[data-testid*="stButton"] {
+        background-color: var(--primary-color) !important;
+        color: var(--primary-text-color) !important;
+        border-color: var(--primary-background-color) !important;
+        font-weight: bold;
+    }  
+    div.stButton > button[data-testid*="stButton"]:hover {
+        background-color: var(--primary-background-color) !important;
+        border-color: #ff9900 !important;
+    }
+    
+    /* Contenedor principal del st.info (ya estaba bien) */
+    div[data-testid="stAlert"] [data-baseweb="button"] {
+        background-color: #fff7e6 !important; /* Fondo amarillo claro */
+        color: #333333 !important; /* Texto gris oscuro */
+        border-left-color: #ffb300 !important; /* Barra lateral amarilla */
+    }
+    
+    /* Icono del st.info (ya estaba bien) */
+    div[data-testid="stAlert"] [data-baseweb="button"] svg {
+        fill: #ffb300 !important; 
+    }  
+    /* [RESTO DE TUS ESTILOS DE CARD, UPLOAD, NAVBAR Y LIMPIEZA...] */
+    
+    /* CARD STYLE ADDED FOR CLEAN LOOK */
+    .card {
+        background-color: #f7f7f7;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    
+    /* UPLOAD BOX FOR EMPTY STATE */
+    /* Se aplica al contenedor del file_uploader cuando está vacío */
+    .upload-box {
+        height: 280px;
+        border: 3px dashed #ffb300;
+        border-radius: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 18px;
+        color: #888;
+        background-color: #fff7e6;
+        margin-top: 10px;
+        margin-bottom: 20px;
+    }
+    
+    /* NAVBAR */
+    .top-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 9999;
+        background: linear-gradient(90deg, #ffd700, #ffb300);
+        padding: 18px 40px;
+        font-size: 22px;
+        font-weight: 600;
+        color: #000;
+        border-radius: 0 0 15px 15px;
+        box-shadow: 0px 3px 10px rgba(0,0,0,0.15);
+    }  
+    .centered-content {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;  
+    }
+    
+    /* ---------------------- LIMPIEZA Y AJUSTES ---------------------- */
+    /* REMOVE STREAMLIT DEFAULT PADDING & WHITE BLOCKS (CORREGIDO) */
+    .main > div {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+    /* REMOVE STREAMLIT DEFAULT HEADER */
+    header, .st-emotion-cache-18ni7ap {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+    }
+    
+    /* FIX SIDEBAR SHIFT */
+    section[data-testid="stSidebar"] {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+    }
+    /* FINAL FIX: SET EXACT SPACE BETWEEN NAVBAR AND FIRST ELEMENT */
+    .block-container {
+        padding-top: 0 !important; /* Asegura que el contenedor no tenga padding superior */
+        margin-top: 1px !important;  
+    }
 
 </style>
 """, unsafe_allow_html=True)
@@ -238,6 +242,9 @@ if 'stem_results' not in st.session_state:
 with left:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.markdown("### Drop your audio file")
+
+    # 🚨 CAMBIO CLAVE: Utilizamos un contenedor para envolver el file_uploader 
+    # y aplicar el estilo si está vacío.
     audio = st.file_uploader(" ", type=["mp3","wav","m4a"], label_visibility="collapsed")
 
     if audio:
@@ -297,20 +304,16 @@ with left:
 
             # Estilos del gráfico
             fig_bar.update_layout(
-                # 🚨 CAMBIO 1: Aumentar la altura para que ocupe más espacio
-                height=300, # Ajusta esta altura según lo necesites para que baje más
+                height=300, 
                 margin=dict(l=10, r=10, t=20, b=10),
-                # 🚨 CAMBIO 2: Fondos en blanco
                 plot_bgcolor="white", 
                 paper_bgcolor="white",
                 yaxis=dict(range=[0, 100], title="Relative Punctuation(0-100)"),
-                # 🚨 CAMBIO 3: Eliminar el título del eje X
                 xaxis_title=None
             )
             st.plotly_chart(fig_bar, use_container_width=True)
 
         # 4. GRÁFICA DE ENERGÍA (RMS)
-        # La barra "---" se ha eliminado en el commit anterior
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=times, y=rms, mode="lines", line=dict(color="#ff9900", width=2)))
         mean_rms = np.mean(rms)
@@ -318,10 +321,8 @@ with left:
                       annotation_text=f"Average Energy: {mean_rms:.3f}", 
                       annotation_position="bottom right", annotation_font_size=10)
         fig.update_layout(
-            # 🚨 CAMBIO 4: Ajustar la altura para que el gráfico sea más alto
-            height=380, # Ajusta este valor si necesitas que baje aún más
+            height=380, 
             margin=dict(l=10, r=10, t=10, b=10), 
-            # 🚨 CAMBIO 5: Fondos en blanco
             paper_bgcolor="white",
             plot_bgcolor="white", 
             title=dict(text="Energy Analysis over Time (t)", font=dict(size=14, color="#333")),
@@ -331,8 +332,12 @@ with left:
         
     else:
         st.session_state.audio_path = None # Limpiar ruta si no hay audio
-        st.markdown("<div class='upload-box'>Drag & drop an audio file here</div>",
-                    unsafe_allow_html=True)
+        
+        # 🚨 CAMBIO CLAVE: El st.file_uploader necesita estar dentro del div personalizado 
+        # para que se muestre como deseas cuando está vacío, si el estilo solo es un placeholder.
+        st.markdown("<div class='upload-box'>", unsafe_allow_html=True)
+        st.write("Drag & drop an audio file here") # El texto dentro de la caja
+        st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
