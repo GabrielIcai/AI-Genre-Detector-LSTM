@@ -280,7 +280,7 @@ with left:
         
         # Gráfico de Barras de Métricas Clave
         with col_metrics:
-            st.markdown("##### KEY METRICS")
+            st.markdown("##### Key Metrics")
             
             # Convertir el diccionario a un DataFrame con pandas
             df_metrics = pd.DataFrame(
