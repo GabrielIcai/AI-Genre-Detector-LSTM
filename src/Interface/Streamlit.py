@@ -69,12 +69,37 @@ def get_demucs_model(model_name="htdemucs"):
     """Carga el modelo Demucs una sola vez y lo guarda en caché."""
     return get_model(model_name).to("cpu").eval()
 
+# =========================================================
+# === 2. FUNCIÓN DE SEPARACIÓN (DEMUCS) - CORREGIDA ===
+# =========================================================
+
+# @st.cache_resource... (get_demucs_model se mantiene igual)
+
 def load_audio_pydub(path, target_sr=44100):
-    """Carga cualquier audio (MP3/WAV) usando pydub y devuelve np.array normalizado y sample rate."""
+    """Carga cualquier audio (MP3/WAV) usando pydub y devuelve np.array estéreo [2, Samples] normalizado y sample rate."""
+    
     audio = AudioSegment.from_file(path)
-    audio = audio.set_channels(1).set_frame_rate(target_sr)
-    samples = np.array(audio.get_array_of_samples()).astype(np.float32) / 32768.0
-    return samples, target_sr
+    audio = audio.set_channels(2).set_frame_rate(target_sr)
+    samples = np.array(audio.get_array_of_samples()).astype(np.float32)
+    y = samples.reshape((-1, 2)).T / 32768.0
+    y = y.astype(np.float32)
+
+    return y, target_sr
+
+def separate_audio_stems(input_path):
+    """Separa el audio en stems (vocals y accompaniment) usando Demucs y pydub."""
+    
+    y, sr = load_audio_pydub(input_path, target_sr=44100)
+    wav = torch.from_numpy(y).float().unsqueeze(0)  
+
+    model = get_demucs_model()
+    sources = apply_model(model, wav, device="cpu")[0]  # [stems, 2, samples]
+    vocals = sources[3].mean(axis=0).numpy() # Mono [Samples]
+    accompaniment = (sources[0] + sources[1] + sources[2]).mean(axis=0).numpy() # Mono [Samples]
+    vocals_path = save_as_mp3(vocals, sr)
+    music_path = save_as_mp3(accompaniment, sr)
+
+    return vocals_path, music_path, sr
 
 def save_as_mp3(audio_array, sr):
     """Guarda un numpy array de audio como MP3 usando pydub en un archivo temporal."""
@@ -89,26 +114,6 @@ def save_as_mp3(audio_array, sr):
     audio_segment.export(tmp_path, format="mp3")
     return tmp_path
 
-def separate_audio_stems(input_path):
-    """Separa el audio en stems (vocals y accompaniment) usando Demucs y pydub."""
-    
-    # 1. Cargar audio
-    y, sr = load_audio_pydub(input_path, target_sr=44100)
-    wav = torch.from_numpy(y).float().unsqueeze(0).unsqueeze(0)  # [1, canales, samples]
-
-    # 2. Separación con Demucs
-    model = get_demucs_model()
-    sources = apply_model(model, wav, device="cpu")[0]  # [stems, channels, samples]
-
-    # 3. Crear stems
-    vocals = sources[3].mean(axis=0).numpy()
-    accompaniment = (sources[0] + sources[1] + sources[2]).mean(axis=0).numpy()
-
-    # 4. Guardar stems como MP3
-    vocals_path = save_as_mp3(vocals, sr)
-    music_path = save_as_mp3(accompaniment, sr)
-
-    return vocals_path, music_path, sr
 
 # =========================================================
 # ==================== 3. CUSTOM CSS ======================
