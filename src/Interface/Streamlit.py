@@ -182,7 +182,7 @@ def create_radar_chart(user_metrics: dict, target_genre: str):
             )),
         # 💡 CAMBIO CLAVE AQUÍ: showlegend=False
         showlegend=False, 
-        height=390,
+        height=340,
         margin=dict(l=50, r=50, t=50, b=50),
         plot_bgcolor="white",  
         paper_bgcolor="white",
