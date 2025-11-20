@@ -60,20 +60,13 @@ except Exception as e:
 
 
 # =========================================================
-# === 2. FUNCIÓN DE SEPARACIÓN (DEMUCS) ===
+# === 2. FUNCIÓN DE SEPARACIÓN (DEMUCS) - CORREGIDA ===
 # =========================================================
 
-# Manteniendo las funciones de Demucs aquí como en tu código original para la revisión
 @st.cache_resource
 def get_demucs_model(model_name="htdemucs"):
     """Carga el modelo Demucs una sola vez y lo guarda en caché."""
     return get_model(model_name).to("cpu").eval()
-
-# =========================================================
-# === 2. FUNCIÓN DE SEPARACIÓN (DEMUCS) - CORREGIDA ===
-# =========================================================
-
-# @st.cache_resource... (get_demucs_model se mantiene igual)
 
 def load_audio_pydub(path, target_sr=44100):
     """Carga cualquier audio (MP3/WAV) usando pydub y devuelve np.array estéreo [2, Samples] normalizado y sample rate."""
@@ -114,12 +107,107 @@ def save_as_mp3(audio_array, sr):
     audio_segment.export(tmp_path, format="mp3")
     return tmp_path
 
+# =========================================================
+# === 3. DATOS Y FUNCIÓN PARA GRÁFICO RADAR (NUEVO) ===
+# =========================================================
+
+# Valores simulados (0-100) para las métricas clave.
+GENRE_TARGETS = {
+    "Deep House": {
+        "Energía RMS": 65,
+        "Brillo (Centroide)": 40,
+        "Graves (<80Hz)": 75,
+        "Rango Dinámico (DR)": 55
+    },
+    "Techno": {
+        "Energía RMS": 85,
+        "Brillo (Centroide)": 70,
+        "Graves (<80Hz)": 60,
+        "Rango Dinámico (DR)": 45
+    },
+    "Progressive House": {
+        "Energía RMS": 70,
+        "Brillo (Centroide)": 50,
+        "Graves (<80Hz)": 65,
+        "Rango Dinámico (DR)": 65
+    },
+    "Ambient": {
+        "Energía RMS": 30,
+        "Brillo (Centroide)": 25,
+        "Graves (<80Hz)": 40,
+        "Rango Dinámico (DR)": 80
+    },
+    "Pop": {
+        "Energía RMS": 90,
+        "Brillo (Centroide)": 80,
+        "Graves (<80Hz)": 50,
+        "Rango Dinámico (DR)": 35
+    }
+}
+
+def create_radar_chart(user_metrics: dict, target_genre: str):
+    """
+    Crea un gráfico de radar comparando las métricas del usuario con el promedio del género target.
+    """
+    target_metrics = GENRE_TARGETS.get(target_genre, GENRE_TARGETS["Deep House"]) 
+    
+    # Asegurarse de que solo se usen las 4 métricas que queremos comparar.
+    metric_keys = list(target_metrics.keys())
+    
+    # Asegurarse de que user_metrics tiene las mismas claves y orden para el radar.
+    user_data = [user_metrics[k] for k in metric_keys if k in user_metrics]
+    target_data = list(target_metrics.values())
+    categories = metric_keys
+
+    # Convertir a DataFrame de Plotly
+    df_radar = pd.DataFrame({
+        'Métrica': categories * 2,
+        'Valor': user_data + target_data,
+        'Tipo': ['Tu Canción'] * len(categories) + [f'{target_genre} Target'] * len(categories)
+    })
+
+    fig_radar = go.Figure()
+
+    # Trazar Tu Canción
+    fig_radar.add_trace(go.Scatterpolar(
+        r=user_data,
+        theta=categories,
+        fill='toself',
+        name='Tu Canción',
+        marker_color='#FFB300' 
+    ))
+
+    # Trazar el Target (Género)
+    fig_radar.add_trace(go.Scatterpolar(
+        r=target_data,
+        theta=categories,
+        fill='toself',
+        name=f'{target_genre} Target',
+        marker_color='#5B9EEF',
+        opacity=0.5
+    ))
+    
+    fig_radar.update_layout(
+        polar=dict(
+            radialaxis=dict(
+                visible=True,
+                range=[0, 100]
+            )),
+        showlegend=True,
+        height=450,
+        margin=dict(l=50, r=50, t=50, b=50),
+        plot_bgcolor="white",  
+        paper_bgcolor="white",
+        font_color="#333333"
+    )
+
+    return fig_radar
 
 # =========================================================
-# ==================== 3. CUSTOM CSS ======================
+# ==================== 4. CUSTOM CSS ======================
 # =========================================================
+# NOTE: (CSS code remains unchanged from the user's input)
 
-# NOTA: Todo el CSS está aquí. No se ha perdido. Solo hay que asegurar que Streamlit lo inyecte.
 st.markdown("""
 <style>
     /* ---------------------- ANULACIÓN DE COLOR PRIMARIO DE STREAMLIT ---------------------- */  
@@ -151,7 +239,7 @@ st.markdown("""
     
     /* Icono del st.info (ya estaba bien) */
     div[data-testid="stAlert"] [data-baseweb="button"] svg {
-        fill: #ffb300 !important; 
+        fill: #ffb300 !important;  
     }  
     /* [RESTO DE TUS ESTILOS DE CARD, UPLOAD, NAVBAR Y LIMPIEZA...] */
     
@@ -231,7 +319,8 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ===================== 4. INTERFAZ =======================
+
+# ===================== 5. INTERFAZ =======================
 WARM_PALETTE = ['#FFD700', '#FFB300', '#FF8C00', '#D2691E', '#8B4513']
 # ------------ NAVBAR ------------
 st.markdown("<div class='top-bar'>Prod.AI — Music Genre Detector & Stem Splitter </div>", unsafe_allow_html=True)
@@ -249,7 +338,6 @@ with left:
     st.markdown("### Drop your audio file")
 
     # 🚨 CAMBIO CLAVE: Utilizamos un contenedor para envolver el file_uploader 
-    # y aplicar el estilo si está vacío.
     audio = st.file_uploader(" ", type=["mp3","wav","m4a"], label_visibility="collapsed")
 
     if audio:
@@ -271,7 +359,7 @@ with left:
         
         st.header(f"  Genre Detected: **{pred_genre}**")
         
-        # 3. GRÁFICA DE DONUT Y GRÁFICA DE BARRAS
+        # 3. GRÁFICA DE DONUT Y CONTENEDOR DE MÉTRICAS
         col_genre, col_spacer, col_metrics = st.columns([1.5, 0.1, 1]) 
         
         with col_genre:
@@ -283,40 +371,58 @@ with left:
             ax1.set_title("") 
             st.pyplot(fig1, use_container_width=True)
         
-        # Gráfico de Barras de Métricas Clave
+        # 🚨 NUEVO CONTENEDOR DE MÉTRICAS CON ALTERNANCIA (BARRAS vs. RADAR)
         with col_metrics:
-            st.markdown("##### Key Metrics")
+            st.markdown("##### Visualización de Métricas")
             
-            # Convertir el diccionario a un DataFrame con pandas
-            df_metrics = pd.DataFrame(
-                list(producer_metrics.items()), 
-                columns=['Métrica', 'Valor']
+            # --- BOTÓN/RADIO PARA ALTERNAR VISTA ---
+            view_mode = st.radio(
+                "Select View:",
+                ("Métricas Clave (Barras)", "Comparativa Género (Radar)"),
+                horizontal=False,
+                label_visibility="collapsed",
+                key="metric_view"
             )
+            
+            # --- LÓGICA DE VISUALIZACIÓN ---
+            
+            if view_mode == "Métricas Clave (Barras)":
+                # --- VISTA DE BARRAS (EXISTENTE) ---
+                
+                # Convertir el diccionario a un DataFrame con pandas
+                df_metrics = pd.DataFrame(
+                    list(producer_metrics.items()), 
+                    columns=['Métrica', 'Valor']
+                )
 
-            # Crear el gráfico de barras con plotly
-            fig_bar = go.Figure(
-                data=[
-                    go.Bar(
-                        x=df_metrics['Métrica'],
-                        y=df_metrics['Valor'],
-                        marker_color=WARM_PALETTE[:len(df_metrics)], # Asegura que los colores coincidan con el número de métricas
-                        text=[f"{v:.1f}" for v in df_metrics['Valor']],
-                        textposition='auto',
-                        width=0.9 
-                    )
-                ]
-            )
+                fig_bar = go.Figure(
+                    data=[
+                        go.Bar(
+                            x=df_metrics['Métrica'],
+                            y=df_metrics['Valor'],
+                            marker_color=WARM_PALETTE[:len(df_metrics)],
+                            text=[f"{v:.1f}" for v in df_metrics['Valor']],
+                            textposition='auto',
+                            width=0.9 
+                        )
+                    ]
+                )
 
-            # Estilos del gráfico
-            fig_bar.update_layout(
-                height=300, 
-                margin=dict(l=10, r=10, t=20, b=10),
-                plot_bgcolor="white", 
-                paper_bgcolor="white",
-                yaxis=dict(range=[0, 100], title="Relative Punctuation(0-100)"),
-                xaxis_title=None
-            )
-            st.plotly_chart(fig_bar, use_container_width=True)
+                fig_bar.update_layout(
+                    height=300, 
+                    margin=dict(l=10, r=10, t=20, b=10),
+                    plot_bgcolor="white", 
+                    paper_bgcolor="white",
+                    yaxis=dict(range=[0, 100], title="Relative Punctuation(0-100)"),
+                    xaxis_title=None
+                )
+                st.plotly_chart(fig_bar, use_container_width=True)
+            
+            elif view_mode == "Comparativa Género (Radar)":
+                # --- VISTA RADAR (NUEVA) ---
+                fig_radar = create_radar_chart(producer_metrics, pred_genre)
+                st.plotly_chart(fig_radar, use_container_width=True)
+
 
         # 4. GRÁFICA DE ENERGÍA (RMS)
         fig = go.Figure()
