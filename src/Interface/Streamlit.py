@@ -170,7 +170,7 @@ def create_radar_chart(user_metrics: dict, target_genre: str):
         theta=categories,
         fill='toself',
         name=f'{target_genre} Target',
-        marker_color='#E8D682',
+        marker_color='#F08E26',
         opacity=0.5
     ))
     
