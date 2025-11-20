@@ -24,8 +24,6 @@ st.set_page_config(page_title="LALAAI", layout="wide")
 # === 1. CARGA DINÁMICA DE MÓDULOS DE PROCESAMIENTO (AI) ===
 # =========================================================
 
-# 🚨 ELIMINADO: La función @st.cache_resource def load_spotify_client ya no es necesaria.
-
 # Función auxiliar para cargar módulos dinámicamente
 def load_module_dynamically(module_name, relative_path):
     full_path = os.path.normpath(os.path.join(os.path.dirname(__file__), relative_path))
@@ -44,7 +42,6 @@ try:
     energy_module = load_module_dynamically("energy_module", '../Energy/energy.py')
     calculate_track_energy = energy_module.calculate_track_energy
     
-    # 🚨 ELIMINADO: Ya no se carga spotify_module ni get_recommended_tracks
     # Se añade la carga de Métricas
     metrics_module = load_module_dynamically("metrics_module", '../metricas/metricas.py')
     calculate_producer_metrics = metrics_module.calculate_producer_metrics # <--- Nueva función
@@ -113,7 +110,8 @@ def separate_audio_stems(input_path):
 
 # =========================================================
 # ==================== 3. CUSTOM CSS ======================
-# ... (Tu código CSS se mantiene sin cambios) ...
+# =========================================================
+
 st.markdown("""
 <style>
      /* ---------------------- ANULACIÓN DE COLOR PRIMARIO DE STREAMLIT ---------------------- */   
@@ -259,9 +257,9 @@ with left:
         
         producer_metrics = calculate_producer_metrics(audio_path)
         
-        st.header(f"   Genre Detected: **{pred_genre}**")
+        st.header(f"  Genre Detected: **{pred_genre}**")
         
-        # 3. GRÁFICA DE DONUT Y GRÁFICA DE BARRAS (REEMPLAZANDO SPOTIFY)
+        # 3. GRÁFICA DE DONUT Y GRÁFICA DE BARRAS
         col_genre, col_spacer, col_metrics = st.columns([1.5, 0.1, 1]) 
         
         with col_genre:
@@ -273,6 +271,7 @@ with left:
             ax1.set_title("") 
             st.pyplot(fig1, use_container_width=True)
         
+        # 🚨 NUEVO: Gráfico de Barras de Métricas Clave
         with col_metrics:
             st.markdown("##### KEY METRICS")
             
@@ -303,12 +302,12 @@ with left:
                 plot_bgcolor="#f7f7f7", 
                 paper_bgcolor="#f7f7f7",
                 yaxis=dict(range=[0, 100], title="Relative Punctuation(0-100)"),
-                xaxis_title=None,)
-            
+                xaxis_title=None
+            )
             st.plotly_chart(fig_bar, use_container_width=True)
 
         # 4. GRÁFICA DE ENERGÍA (RMS)
-        st.markdown("---") 
+        # 🚨 CAMBIO 1: Eliminada la línea st.markdown("---")
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=times, y=rms, mode="lines", line=dict(color="#ff9900", width=2)))
         mean_rms = np.mean(rms)
@@ -316,7 +315,9 @@ with left:
                       annotation_text=f"Average Energy: {mean_rms:.3f}", 
                       annotation_position="bottom right", annotation_font_size=10)
         fig.update_layout(
-            height=280, margin=dict(l=10, r=10, t=10, b=10), paper_bgcolor="#fff7e6",
+            # 🚨 CAMBIO 2: Aumentada la altura de 280 a 350 para ocupar más espacio
+            height=350, 
+            margin=dict(l=10, r=10, t=10, b=10), paper_bgcolor="#fff7e6",
             plot_bgcolor="#fff7e6", title=dict(text="Energy Analysis over Time (t)", font=dict(size=14, color="#333")),
             xaxis_title="Time (s)", yaxis_title="Amplitud RMS", showlegend=False
         )
