@@ -105,34 +105,34 @@ def save_as_mp3(audio_array, sr):
 # Valores simulados (0-100) para las métricas clave.
 GENRE_TARGETS = {
     "Deep House": {
-        "Energía RMS": 65,
-        "Brillo (Centroide)": 40,
-        "Energía de Graves (<80Hz)": 75,
-        "Rango Dinámico (DR)": 55
+        "RMS": 65,
+        "Centroid": 40,
+        "Lows": 75,
+        "DR": 55
     },
     "Techno": {
-        "Energía RMS": 85,
-        "Brillo (Centroide)": 70,
-        "Energía de Graves (<80Hz)": 60,
-        "Rango Dinámico (DR)": 45
+        "RMS": 85,
+        "Centroid": 70,
+        "Lows": 60,
+        "DR": 45
     },
     "Progressive House": {
-        "Energía RMS": 70,
-        "Brillo (Centroide)": 50,
-        "Energía de Graves (<80Hz)": 65,
-        "Rango Dinámico (DR)": 65
+        "RMS": 70,
+        "Centroid": 50,
+        "Lows": 65,
+        "DR": 65
     },
     "Ambient": {
-        "Energía RMS": 30,
-        "Brillo (Centroide)": 25,
-        "Energía de Graves (<80Hz)": 40,
-        "Rango Dinámico (DR)": 80
+        "RMS": 30,
+        "Centroid": 25,
+        "Lows": 40,
+        "DR": 80
     },
     "Pop": {
-        "Energía RMS": 90,
-        "Brillo (Centroide)": 80,
-        "Energía de Graves (<80Hz)": 50,
-        "Rango Dinámico (DR)": 35
+        "RMS": 90,
+        "Centroid": 80,
+        "Lows": 50,
+        "DR": 35
     }
 }
 
@@ -161,7 +161,7 @@ def create_radar_chart(user_metrics: dict, target_genre: str):
         theta=categories,
         fill='toself',
         name='Tu Canción',
-        marker_color='#FFB300' 
+        marker_color='#FA8F46' 
     ))
 
     # Trazar el Target (Género)
@@ -170,7 +170,7 @@ def create_radar_chart(user_metrics: dict, target_genre: str):
         theta=categories,
         fill='toself',
         name=f'{target_genre} Target',
-        marker_color='#5B9EEF',
+        marker_color='#E8D682',
         opacity=0.5
     ))
     
@@ -180,7 +180,6 @@ def create_radar_chart(user_metrics: dict, target_genre: str):
                 visible=True,
                 range=[0, 100]
             )),
-        # 💡 CAMBIO CLAVE AQUÍ: showlegend=False
         showlegend=False, 
         height=320,
         margin=dict(l=50, r=50, t=50, b=50),
@@ -371,19 +370,19 @@ with left:
         
         # 3. ALTERNANCIA DE GRÁFICOS DE MÉTRICAS (Barras vs. Radar)
         with col_metrics:
-            st.markdown("##### Visualización de Métricas")
+            st.markdown("##### Metrics Visualization")
             
             # --- SELECTBOX PARA ALTERNAR VISTA (DESPLEGABLE) ---
             view_mode = st.selectbox(
                 "Select View:",
-                ("Métricas Clave (Barras)", "Comparativa Género (Radar)"),
+                ("Key Metrics(Bars)", "Genre Comparison"),
                 label_visibility="collapsed",
                 key="metric_view"
             )
             
             # --- LÓGICA DE VISUALIZACIÓN ---
             
-            if view_mode == "Métricas Clave (Barras)":
+            if view_mode == "Key Metrics(Bars)":
                 # --- VISTA DE BARRAS ---
                 df_metrics = pd.DataFrame(
                     list(producer_metrics.items()), 
@@ -413,7 +412,7 @@ with left:
                 )
                 st.plotly_chart(fig_bar, use_container_width=True)
             
-            elif view_mode == "Comparativa Género (Radar)":
+            elif view_mode == "Genre Comparison":
                 # --- VISTA RADAR ---
                 fig_radar = create_radar_chart(producer_metrics, pred_genre)
                 st.plotly_chart(fig_radar, use_container_width=True)
