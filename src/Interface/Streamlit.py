@@ -142,14 +142,11 @@ def create_radar_chart(user_metrics: dict, target_genre: str):
     """
     target_metrics = GENRE_TARGETS.get(target_genre, GENRE_TARGETS["Deep House"]) 
     
-    # Definir las 4 CATEGORÍAS FIJAS
     categories = list(target_metrics.keys()) 
 
-    # Asegurarse de que los datos del usuario coincidan con el orden
     user_data = [user_metrics.get(k, 0) for k in categories] 
     target_data = list(target_metrics.values())
 
-    # Construir el DataFrame con longitudes garantizadas
     df_radar = pd.DataFrame({
         'Métrica': categories * 2,
         'Valor': user_data + target_data,
@@ -183,6 +180,8 @@ def create_radar_chart(user_metrics: dict, target_genre: str):
                 visible=True,
                 range=[0, 100]
             )),
+        # 💡 CAMBIO CLAVE AQUÍ: showlegend=False
+        showlegend=False, 
         height=450,
         margin=dict(l=50, r=50, t=50, b=50),
         plot_bgcolor="white",  
