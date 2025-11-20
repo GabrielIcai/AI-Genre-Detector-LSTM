@@ -85,7 +85,6 @@ class AudioDataset(torch.utils.data.Dataset):
             img = self.transform(img)
         return img, torch.tensor(feats, dtype=torch.float32), 0
 
-
 def load_model():
     model = CRNN(num_classes=len(CLASS_NAMES), additional_features_dim=12, hidden_size=256)
     model.load_state_dict(torch.load(MODEL_PATH, map_location=DEVICE))

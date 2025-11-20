@@ -16,14 +16,15 @@ import numpy as np
 import tempfile
 import torch
 import librosa
+import pandas as pd # <--- Necesario para la gráfica de barras
 
 st.set_page_config(page_title="LALAAI", layout="wide")
 
 # =========================================================
 # === 1. CARGA DINÁMICA DE MÓDULOS DE PROCESAMIENTO (AI) ===
-# ============================================s=============
+# =========================================================
 
-# ... (El código de load_module_dynamically y la carga de predict_song, etc., se mantiene igual) ...
+# 🚨 ELIMINADO: La función @st.cache_resource def load_spotify_client ya no es necesaria.
 
 # Función auxiliar para cargar módulos dinámicamente
 def load_module_dynamically(module_name, relative_path):
@@ -37,23 +38,27 @@ def load_module_dynamically(module_name, relative_path):
     spec.loader.exec_module(module)
     return module
 
-# Carga de Módulos (usando st.cache_resource para modelos grandes si fuera necesario, pero aquí simple)
+# Carga de Módulos
 try:
+    # Carga de la función de Energía
     energy_module = load_module_dynamically("energy_module", '../Energy/energy.py')
     calculate_track_energy = energy_module.calculate_track_energy
     
-    spotify_module = load_module_dynamically("spotify_module", '../Spotify/Spotify.py')
-    get_recommended_tracks = spotify_module.get_recommended_tracks
+    # 🚨 ELIMINADO: Ya no se carga spotify_module ni get_recommended_tracks
+    # Se añade la carga de Métricas
+    metrics_module = load_module_dynamically("metrics_module", '../Metricas/metrica.py')
+    calculate_producer_metrics = metrics_module.calculate_producer_metrics # <--- Nueva función
     
     predict_module = load_module_dynamically("ai_model_predict", '../AI-Model/predict.py')
     predict_song = predict_module.predict_song
 
 except Exception as e:
-    st.error(f"Error al cargar módulos de AI/Spotify: {e}")
+    st.error(f"Error al cargar módulos de AI/Métricas: {e}")
     # Define funciones dummy para evitar que el código falle si hay error
     def calculate_track_energy(path): return np.linspace(0, 10, 400), np.sin(np.linspace(0, 10, 400)) * np.exp(-np.linspace(0, 10, 400)/5)
     def predict_song(path): return "Deep House", {"Deep House": 0.6, "Progressive House": 0.3, "Ambient": 0.1}
-    def get_recommended_tracks(probs, total): return [{"name": f"Track {i}", "artists": [{"name": "Artista Falso"}], "album": {"images": [{"url": None}]}} for i in range(total)]
+    # Nuevo dummy para la métrica
+    def calculate_producer_metrics(path): return {"Energía RMS": 45, "Brillo (Centroide)": 55, "Energía de Graves (<80Hz)": 30, "Rango Dinámico (DR)": 70}
 
 
 # =========================================================
@@ -108,114 +113,113 @@ def separate_audio_stems(input_path):
 
 # =========================================================
 # ==================== 3. CUSTOM CSS ======================
-# =========================================================
-
+# ... (Tu código CSS se mantiene sin cambios) ...
 st.markdown("""
 <style>
-     /* ---------------------- ANULACIÓN DE COLOR PRIMARIO DE STREAMLIT ---------------------- */   
-     /* Definición de variables primarias (esto debería funcionar si Streamlit las respeta) */
-     :root {
-         --primary-color: #ffd700;
-         --primary-text-color: #000000;
-         --primary-background-color: #ffb300; 
-     }  
-     /* **CORRECCIÓN:** Selector ultra-específico para el botón st.button(type="primary") */
-     /* Apuntamos al contenedor específico con la clase 'primary' que Streamlit aplica */
-     div.stButton > button[data-testid*="stButton"] {
-         background-color: var(--primary-color) !important;
-         color: var(--primary-text-color) !important;
-         border-color: var(--primary-background-color) !important;
-         font-weight: bold;
-     }  
-     div.stButton > button[data-testid*="stButton"]:hover {
-         background-color: var(--primary-background-color) !important;
-         border-color: #ff9900 !important;
-     }
-    
-     /* Contenedor principal del st.info (ya estaba bien) */
-     div[data-testid="stAlert"] [data-baseweb="button"] {
-         background-color: #fff7e6 !important; /* Fondo amarillo claro */
-         color: #333333 !important; /* Texto gris oscuro */
-         border-left-color: #ffb300 !important; /* Barra lateral amarilla */
-     }
-    
-     /* Icono del st.info (ya estaba bien) */
-     div[data-testid="stAlert"] [data-baseweb="button"] svg {
-         fill: #ffb300 !important; 
-     }  
-     /* [RESTO DE TUS ESTILOS DE CARD, UPLOAD, NAVBAR Y LIMPIEZA...] */
-    
-     /* CARD STYLE ADDED FOR CLEAN LOOK */
-     .card {
-         background-color: #f7f7f7;
-         border-radius: 12px;
-         padding: 20px;
-         margin-bottom: 20px;
-         box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-     }
-    
-     /* UPLOAD BOX FOR EMPTY STATE */
-     .upload-box {
-         height: 280px;
-         border: 3px dashed #ffb300;
-         border-radius: 10px;
-         display: flex;
-         justify-content: center;
-         align-items: center;
-         font-size: 18px;
-         color: #888;
-         background-color: #fff7e6;
-         margin-top: 10px;
-         margin-bottom: 20px;
-     }
-    
-     /* NAVBAR */
-     .top-bar {
-         position: fixed;
-         top: 0;
-         left: 0;
-         width: 100%;
-         z-index: 9999;
-         background: linear-gradient(90deg, #ffd700, #ffb300);
-         padding: 18px 40px;
-         font-size: 22px;
-         font-weight: 600;
-         color: #000;
-         border-radius: 0 0 15px 15px;
-         box-shadow: 0px 3px 10px rgba(0,0,0,0.15);
-     }  
-     .centered-content {
-         text-align: center;
-         display: flex;
-         flex-direction: column;
-         align-items: center; 
-     }
-    
-     /* ---------------------- LIMPIEZA Y AJUSTES ---------------------- */
-     /* REMOVE STREAMLIT DEFAULT PADDING & WHITE BLOCKS (CORREGIDO) */
-     .main > div {
-         padding-top: 0 !important;
-         margin-top: 0 !important;
-         background: transparent !important;
-         box-shadow: none !important;
-     }
-     /* REMOVE STREAMLIT DEFAULT HEADER */
-     header, .st-emotion-cache-18ni7ap {
-         display: none !important;
-         visibility: hidden !important;
-         height: 0 !important;
-     }
-    
-     /* FIX SIDEBAR SHIFT */
-     section[data-testid="stSidebar"] {
-         padding-top: 0 !important;
-         margin-top: 0 !important;
-     }
-     /* FINAL FIX: SET EXACT SPACE BETWEEN NAVBAR AND FIRST ELEMENT */
-     .block-container {
-         padding-top: 0 !important; /* Asegura que el contenedor no tenga padding superior */
-         margin-top: 1px !important; 
-     }
+     /* ---------------------- ANULACIÓN DE COLOR PRIMARIO DE STREAMLIT ---------------------- */   
+     /* Definición de variables primarias (esto debería funcionar si Streamlit las respeta) */
+     :root {
+         --primary-color: #ffd700;
+         --primary-text-color: #000000;
+         --primary-background-color: #ffb300; 
+     }  
+     /* **CORRECCIÓN:** Selector ultra-específico para el botón st.button(type="primary") */
+     /* Apuntamos al contenedor específico con la clase 'primary' que Streamlit aplica */
+     div.stButton > button[data-testid*="stButton"] {
+         background-color: var(--primary-color) !important;
+         color: var(--primary-text-color) !important;
+         border-color: var(--primary-background-color) !important;
+         font-weight: bold;
+     }  
+     div.stButton > button[data-testid*="stButton"]:hover {
+         background-color: var(--primary-background-color) !important;
+         border-color: #ff9900 !important;
+     }
+    
+     /* Contenedor principal del st.info (ya estaba bien) */
+     div[data-testid="stAlert"] [data-baseweb="button"] {
+         background-color: #fff7e6 !important; /* Fondo amarillo claro */
+         color: #333333 !important; /* Texto gris oscuro */
+         border-left-color: #ffb300 !important; /* Barra lateral amarilla */
+     }
+    
+     /* Icono del st.info (ya estaba bien) */
+     div[data-testid="stAlert"] [data-baseweb="button"] svg {
+         fill: #ffb300 !important; 
+     }  
+     /* [RESTO DE TUS ESTILOS DE CARD, UPLOAD, NAVBAR Y LIMPIEZA...] */
+    
+     /* CARD STYLE ADDED FOR CLEAN LOOK */
+     .card {
+         background-color: #f7f7f7;
+         border-radius: 12px;
+         padding: 20px;
+         margin-bottom: 20px;
+         box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+     }
+    
+     /* UPLOAD BOX FOR EMPTY STATE */
+     .upload-box {
+         height: 280px;
+         border: 3px dashed #ffb300;
+         border-radius: 10px;
+         display: flex;
+         justify-content: center;
+         align-items: center;
+         font-size: 18px;
+         color: #888;
+         background-color: #fff7e6;
+         margin-top: 10px;
+         margin-bottom: 20px;
+     }
+    
+     /* NAVBAR */
+     .top-bar {
+         position: fixed;
+         top: 0;
+         left: 0;
+         width: 100%;
+         z-index: 9999;
+         background: linear-gradient(90deg, #ffd700, #ffb300);
+         padding: 18px 40px;
+         font-size: 22px;
+         font-weight: 600;
+         color: #000;
+         border-radius: 0 0 15px 15px;
+         box-shadow: 0px 3px 10px rgba(0,0,0,0.15);
+     }  
+     .centered-content {
+         text-align: center;
+         display: flex;
+         flex-direction: column;
+         align-items: center; 
+     }
+    
+     /* ---------------------- LIMPIEZA Y AJUSTES ---------------------- */
+     /* REMOVE STREAMLIT DEFAULT PADDING & WHITE BLOCKS (CORREGIDO) */
+     .main > div {
+         padding-top: 0 !important;
+         margin-top: 0 !important;
+         background: transparent !important;
+         box-shadow: none !important;
+     }
+     /* REMOVE STREAMLIT DEFAULT HEADER */
+     header, .st-emotion-cache-18ni7ap {
+         display: none !important;
+         visibility: hidden !important;
+         height: 0 !important;
+     }
+    
+     /* FIX SIDEBAR SHIFT */
+     section[data-testid="stSidebar"] {
+         padding-top: 0 !important;
+         margin-top: 0 !important;
+     }
+     /* FINAL FIX: SET EXACT SPACE BETWEEN NAVBAR AND FIRST ELEMENT */
+     .block-container {
+         padding-top: 0 !important; /* Asegura que el contenedor no tenga padding superior */
+         margin-top: 1px !important; 
+     }
 
 </style>
 """, unsafe_allow_html=True)
@@ -242,18 +246,26 @@ with left:
         # Guardar archivo temporalmente y actualizar estado
         with tempfile.NamedTemporaryFile(delete=False, suffix=f".{audio.type.split('/')[-1]}") as tmp_file:
             tmp_file.write(audio.read())
-            st.session_state.audio_path = tmp_file.name # Guardamos la ruta en el estado
+            st.session_state.audio_path = tmp_file.name 
             audio_path = tmp_file.name
-        
-        # El resto de la lógica de análisis (Predicción y Gráficas) se mantiene igual
+            
         pred_genre, probs_dict = predict_song(audio_path)
-        tracks = get_recommended_tracks(probs_dict, total_tracks=3)
+        
+        if not isinstance(probs_dict, dict):
+            st.error(f"Error Crítico de Datos: Se esperaba un diccionario, se recibió {type(probs_dict)}.")
+            st.stop() 
+        
+        # 🚨 ELIMINADO: tracks = get_recommended_tracks(probs_dict, total_tracks=3)
+        
         times, rms = calculate_track_energy(audio_path)
         
-        st.header(f"   Genre Detected: **{pred_genre}**")
+        # 🚨 NUEVA LLAMADA: Cálculo de métricas clave para productores
+        producer_metrics = calculate_producer_metrics(audio_path)
         
-        # 3. GRÁFICA DE DONUT Y RECOMENDACIONES (PRIMERO)
-        col_genre, col_spacer, col_spotify = st.columns([1.5, 0.1, 1]) 
+        st.header(f"   Genre Detected: **{pred_genre}**")
+        
+        # 3. GRÁFICA DE DONUT Y GRÁFICA DE BARRAS (REEMPLAZANDO SPOTIFY)
+        col_genre, col_spacer, col_metrics = st.columns([1.5, 0.1, 1]) 
         
         with col_genre:
             st.markdown("##### Probabilidades")
@@ -264,18 +276,44 @@ with left:
             ax1.set_title("") 
             st.pyplot(fig1, use_container_width=True)
         
-        with col_spotify:
-            st.markdown("##### Recomendaciones de Spotify")
-            for track in tracks:
-                track_name = track.get("name", "Desconocido")
-                artist_name = track.get("artists", [{"name": "Desconocido"}])[0]["name"]
-                st.markdown(f"**{track_name}**")
-                st.caption(f"🎧 {artist_name}")
-                st.markdown("---")
-        
-        # 4. GRÁFICA DE ENERGÍA 
+        # 🚨 NUEVO: Gráfico de Barras de Métricas Clave
+        with col_metrics:
+            st.markdown("##### 📈 Análisis Clave de Producción")
+            
+            # Convertir el diccionario a un DataFrame con pandas
+            df_metrics = pd.DataFrame(
+                list(producer_metrics.items()), 
+                columns=['Métrica', 'Valor']
+            )
+
+            # Crear el gráfico de barras con plotly
+            fig_bar = go.Figure(
+                data=[
+                    go.Bar(
+                        x=df_metrics['Métrica'],
+                        y=df_metrics['Valor'],
+                        marker_color=WARM_PALETTE[:4], # Usar los primeros 4 colores de tu paleta
+                        text=[f"{v:.1f}" for v in df_metrics['Valor']],
+                        textposition='auto',
+                        width=0.7 
+                    )
+                ]
+            )
+
+            # Estilos del gráfico
+            fig_bar.update_layout(
+                height=250, 
+                margin=dict(l=10, r=10, t=20, b=10),
+                plot_bgcolor="#f7f7f7", 
+                paper_bgcolor="#f7f7f7",
+                yaxis=dict(range=[0, 100], title="Puntuación Relativa (0-100)"),
+                xaxis_title=None,
+                title=dict(text="Loudness, Tono y Dinámica Relativa", font=dict(size=10, color="#333"))
+            )
+            st.plotly_chart(fig_bar, use_container_width=True)
+
+        # 4. GRÁFICA DE ENERGÍA (RMS)
         st.markdown("---") 
-        # (Lógica de la gráfica de energía de Plotly se mantiene)
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=times, y=rms, mode="lines", line=dict(color="#ff9900", width=2)))
         mean_rms = np.mean(rms)
@@ -284,7 +322,7 @@ with left:
                       annotation_position="bottom right", annotation_font_size=10)
         fig.update_layout(
             height=280, margin=dict(l=10, r=10, t=10, b=10), paper_bgcolor="#fff7e6",
-            plot_bgcolor="#fff7e6", title=dict(text="Análisis de Energía (RMS)", font=dict(size=14, color="#333")),
+            plot_bgcolor="#fff7e6", title=dict(text="Análisis de Energía (RMS) sobre el tiempo", font=dict(size=14, color="#333")),
             xaxis_title="Tiempo (s)", yaxis_title="Amplitud RMS", showlegend=False
         )
         st.plotly_chart(fig, use_container_width=True)
@@ -341,4 +379,3 @@ with right:
             )
     
     st.markdown("</div>", unsafe_allow_html=True)
-
