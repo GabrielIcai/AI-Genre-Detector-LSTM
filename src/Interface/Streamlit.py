@@ -109,7 +109,7 @@ def save_as_mp3(audio_array, sr):
     return tmp_path
 
 # =========================================================
-# === 3. DATOS Y FUNCIÓN PARA GRÁFICO RADAR (NUEVO) ===
+# === 3. DATOS Y FUNCIÓN PARA GRÁFICO RADAR ===
 # =========================================================
 
 # Valores simulados (0-100) para las métricas clave.
@@ -117,7 +117,7 @@ GENRE_TARGETS = {
     "Deep House": {
         "Energía RMS": 65,
         "Brillo (Centroide)": 40,
-        "Energía de Graves (<80Hz)": 75, # Coincide con la clave del dummy
+        "Energía de Graves (<80Hz)": 75,
         "Rango Dinámico (DR)": 55
     },
     "Techno": {
@@ -400,11 +400,10 @@ with left:
             with col_metrics:
                 st.markdown("##### Visualización de Métricas")
                 
-                # --- RADIO PARA ALTERNAR VISTA (NO FUERZA REINICIO COMPLETO) ---
-                view_mode = st.radio(
+                # --- SELECTBOX PARA ALTERNAR VISTA (DESPLEGABLE) ---
+                view_mode = st.selectbox(
                     "Select View:",
                     ("Métricas Clave (Barras)", "Comparativa Género (Radar)"),
-                    horizontal=False,
                     label_visibility="collapsed",
                     key="metric_view"
                 )
