@@ -255,11 +255,8 @@ with left:
             st.error(f"Error Crítico de Datos: Se esperaba un diccionario, se recibió {type(probs_dict)}.")
             st.stop() 
         
-        # 🚨 ELIMINADO: tracks = get_recommended_tracks(probs_dict, total_tracks=3)
-        
         times, rms = calculate_track_energy(audio_path)
         
-        # 🚨 NUEVA LLAMADA: Cálculo de métricas clave para productores
         producer_metrics = calculate_producer_metrics(audio_path)
         
         st.header(f"   Genre Detected: **{pred_genre}**")
@@ -269,7 +266,7 @@ with left:
         
         with col_genre:
             st.markdown("##### Probabilidades")
-            fig1, ax1 = plt.subplots(figsize=(4.5, 4.5))
+            fig1, ax1 = plt.subplots(figsize=(4, 4))
             ax1.pie(list(probs_dict.values()), labels=list(probs_dict.keys()),
                     autopct='%1.1f%%', startangle=90,
                     colors=WARM_PALETTE[:len(probs_dict)])
@@ -278,7 +275,7 @@ with left:
         
         # 🚨 NUEVO: Gráfico de Barras de Métricas Clave
         with col_metrics:
-            st.markdown("##### 📈 Análisis Clave de Producción")
+            st.markdown("##### KEY METRICS")
             
             # Convertir el diccionario a un DataFrame con pandas
             df_metrics = pd.DataFrame(
@@ -292,7 +289,7 @@ with left:
                     go.Bar(
                         x=df_metrics['Métrica'],
                         y=df_metrics['Valor'],
-                        marker_color=WARM_PALETTE[:4], # Usar los primeros 4 colores de tu paleta
+                        marker_color=WARM_PALETTE[:4], 
                         text=[f"{v:.1f}" for v in df_metrics['Valor']],
                         textposition='auto',
                         width=0.7 
@@ -308,7 +305,7 @@ with left:
                 paper_bgcolor="#f7f7f7",
                 yaxis=dict(range=[0, 100], title="Puntuación Relativa (0-100)"),
                 xaxis_title=None,
-                title=dict(text="Loudness, Tono y Dinámica Relativa", font=dict(size=10, color="#333"))
+                title=dict(text="Producer Metrics", font=dict(size=10, color="#333"))
             )
             st.plotly_chart(fig_bar, use_container_width=True)
 
