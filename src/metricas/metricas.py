@@ -90,8 +90,8 @@ def calculate_producer_metrics(audio_path):
     dynamic_range_scaled = np.clip(dynamic_range * 5, 0, 100) # Escala de 0 a 100
 
     return {
-        "Energía RMS": rms_scaled,
-        "Brillo (Centroide)": centroid_scaled,
-        "Energía de Graves (<80Hz)": bass_energy_scaled,
-        "Rango Dinámico (DR)": dynamic_range_scaled
+        "RMS Energy": rms_scaled,
+        "Bright": centroid_scaled,
+        "Low Energy": bass_energy_scaled,
+        "Dynamic Range": dynamic_range_scaled
     }
