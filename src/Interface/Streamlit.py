@@ -264,26 +264,30 @@ with left:
         
         with col_genre:
             st.markdown("##### Probabilidades")
-            fig1, ax1 = plt.subplots(figsize=(3.3, 3.3))
+            fig1, ax1 = plt.subplots(figsize=(4, 4))
             ax1.pie(list(probs_dict.values()), labels=list(probs_dict.keys()),
                     autopct='%1.1f%%', startangle=90,
                     colors=WARM_PALETTE[:len(probs_dict)])
             ax1.set_title("") 
             st.pyplot(fig1, use_container_width=True)
         
+        # Gráfico de Barras de Métricas Clave
         with col_metrics:
             st.markdown("##### KEY METRICS")
             
+            # Convertir el diccionario a un DataFrame con pandas
             df_metrics = pd.DataFrame(
                 list(producer_metrics.items()), 
                 columns=['Métrica', 'Valor']
             )
+
+            # Crear el gráfico de barras con plotly
             fig_bar = go.Figure(
                 data=[
                     go.Bar(
                         x=df_metrics['Métrica'],
                         y=df_metrics['Valor'],
-                        marker_color=WARM_PALETTE[:4], 
+                        marker_color=WARM_PALETTE[:len(df_metrics)], # Asegura que los colores coincidan con el número de métricas
                         text=[f"{v:.1f}" for v in df_metrics['Valor']],
                         textposition='auto',
                         width=0.9 
@@ -293,17 +297,20 @@ with left:
 
             # Estilos del gráfico
             fig_bar.update_layout(
-                height=250, 
+                # 🚨 CAMBIO 1: Aumentar la altura para que ocupe más espacio
+                height=300, # Ajusta esta altura según lo necesites para que baje más
                 margin=dict(l=10, r=10, t=20, b=10),
-                plot_bgcolor="#f7f7f7", 
-                paper_bgcolor="#f7f7f7",
+                # 🚨 CAMBIO 2: Fondos en blanco
+                plot_bgcolor="white", 
+                paper_bgcolor="white",
                 yaxis=dict(range=[0, 100], title="Relative Punctuation(0-100)"),
+                # 🚨 CAMBIO 3: Eliminar el título del eje X
                 xaxis_title=None
             )
             st.plotly_chart(fig_bar, use_container_width=True)
 
         # 4. GRÁFICA DE ENERGÍA (RMS)
-        # 🚨 CAMBIO 1: Eliminada la línea st.markdown("---")
+        # La barra "---" se ha eliminado en el commit anterior
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=times, y=rms, mode="lines", line=dict(color="#ff9900", width=2)))
         mean_rms = np.mean(rms)
@@ -311,10 +318,13 @@ with left:
                       annotation_text=f"Average Energy: {mean_rms:.3f}", 
                       annotation_position="bottom right", annotation_font_size=10)
         fig.update_layout(
-            # 🚨 CAMBIO 2: Aumentada la altura de 280 a 350 para ocupar más espacio
-            height=350, 
-            margin=dict(l=10, r=10, t=10, b=10), paper_bgcolor="#fff7e6",
-            plot_bgcolor="#fff7e6", title=dict(text="Energy Analysis over Time (t)", font=dict(size=14, color="#333")),
+            # 🚨 CAMBIO 4: Ajustar la altura para que el gráfico sea más alto
+            height=380, # Ajusta este valor si necesitas que baje aún más
+            margin=dict(l=10, r=10, t=10, b=10), 
+            # 🚨 CAMBIO 5: Fondos en blanco
+            paper_bgcolor="white",
+            plot_bgcolor="white", 
+            title=dict(text="Energy Analysis over Time (t)", font=dict(size=14, color="#333")),
             xaxis_title="Time (s)", yaxis_title="Amplitud RMS", showlegend=False
         )
         st.plotly_chart(fig, use_container_width=True)
@@ -350,7 +360,6 @@ with right:
         if st.session_state.stem_results:
             vocals_path, music_path = st.session_state.stem_results
             
-            # Reutilizamos el título de la tarjeta del panel derecho
             st.markdown("---")
             st.markdown("##### Downloads")
 
