@@ -46,7 +46,7 @@ try:
     
     # 🚨 ELIMINADO: Ya no se carga spotify_module ni get_recommended_tracks
     # Se añade la carga de Métricas
-    metrics_module = load_module_dynamically("metrics_module", '../metricas/metrica.py')
+    metrics_module = load_module_dynamically("metrics_module", '../metricas/metricas.py')
     calculate_producer_metrics = metrics_module.calculate_producer_metrics # <--- Nueva función
     
     predict_module = load_module_dynamically("ai_model_predict", '../AI-Model/predict.py')
