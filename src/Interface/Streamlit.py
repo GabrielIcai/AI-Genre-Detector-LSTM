@@ -330,7 +330,7 @@ with left:
             pred_genre, probs_dict = predict_song(audio_path)
             times, rms = calculate_track_energy(audio_path)
             producer_metrics = calculate_producer_metrics(audio_path)
-        st.write(f"Métricas recibidas: {producer_metrics}")
+
         # GUARDAR EN ESTADO DE SESIÓN
         st.session_state.audio_path = audio_path
         st.session_state.pred_genre = pred_genre
@@ -353,6 +353,13 @@ with left:
         producer_metrics = st.session_state.producer_metrics
         times = st.session_state.times
         rms = st.session_state.rms
+        # --- BLOQUE DE DEPURACIÓN TEMPORAL ---
+        st.markdown("---")
+        st.markdown("#### 🐞 DEBUG: Datos de Métricas")
+        st.write(f"Métricas recibidas: {producer_metrics}")
+        st.write(f"Claves esperadas (Radar/Target): {list(GENRE_TARGETS['Deep House'].keys())}")
+        st.markdown("---")
+        # --------------------------------------
         
         st.header(f"  Genre Detected: **{pred_genre}**")
         
