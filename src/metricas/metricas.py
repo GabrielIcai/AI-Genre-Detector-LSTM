@@ -78,10 +78,13 @@ def calculate_producer_metrics(audio_path):
     centroid_scaled = np.clip(centroid_mean / 50, 0, 100) # Escala de 0 a 100
 
     # 3. Energía de Graves (<80Hz)
-    y_bass = bandpass_filter(y, lowcut=20, highcut=150, sr=sr)
-    bass_rms_linear = librosa.feature.rms(y=y_bass)[0]
-    bass_energy_db = 20 * np.log10(np.mean(bass_rms_linear) + 1e-6)
-    bass_energy_scaled = np.clip(bass_energy_db + 60, 0, 60) # Escala similar a RMS# Escala de 0 a 60
+    lowcut_mid = 300
+    highcut_mid = 2000
+    
+    y_mid = bandpass_filter(y, lowcut=lowcut_mid, highcut=highcut_mid, sr=sr)
+    mid_rms_linear = librosa.feature.rms(y=y_mid)[0]
+    mid_energy_db = 20 * np.log10(np.mean(mid_rms_linear) + 1e-6)
+    bass_energy_scaled = np.clip(mid_energy_db + 60, 0, 60)
     
     # 4. Rango Dinámico (DR)
     peak_amplitude = np.max(np.abs(y))
