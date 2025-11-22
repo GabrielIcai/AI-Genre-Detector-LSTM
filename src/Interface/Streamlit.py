@@ -330,7 +330,7 @@ with left:
             pred_genre, probs_dict = predict_song(audio_path)
             times, rms = calculate_track_energy(audio_path)
             producer_metrics = calculate_producer_metrics(audio_path)
-
+        st.write(f"Métricas recibidas: {producer_metrics}")
         # GUARDAR EN ESTADO DE SESIÓN
         st.session_state.audio_path = audio_path
         st.session_state.pred_genre = pred_genre
