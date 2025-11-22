@@ -82,7 +82,7 @@ def calculate_producer_metrics(audio_path):
     bass_rms_linear = librosa.feature.rms(y=y_bass)[0]
     bass_energy_db = 20 * np.log10(np.mean(bass_rms_linear) + 1e-6)
     bass_energy_scaled = np.clip(bass_energy_db + 60, 0, 60) # Escala similar a RMS# Escala de 0 a 60
-
+    bass_energy_scaled=bass_energy_scaled*10
     # 4. Rango Dinámico (DR)
     peak_amplitude = np.max(np.abs(y))
     peak_db = 20 * np.log10(peak_amplitude + 1e-6)
