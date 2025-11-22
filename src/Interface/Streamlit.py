@@ -142,7 +142,7 @@ def create_radar_chart(user_metrics: dict, target_genre: str):
     target_metrics = GENRE_TARGETS.get(target_genre, GENRE_TARGETS["Deep House"]) 
     
     categories = list(target_metrics.keys()) 
-
+    print(categories)
     # Aquí es donde se usa .get(k, 0). Si las claves no coinciden, devuelve 0.
     user_data = [user_metrics.get(k, 0) for k in categories] 
     target_data = list(target_metrics.values())
