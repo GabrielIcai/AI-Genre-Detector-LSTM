@@ -290,7 +290,7 @@ WARM_PALETTE = ['#FFD700', '#FFB300', '#FF8C00', '#D2691E', '#8B4513']
 # --- LÓGICA DE CARGA DEL LOGO (Base64) ---
 import base64
 
-logo_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'Prod-AI(1).png') 
+logo_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'Prod-AI(2).png') 
 
 logo_html = ""
 image_mimetype = "image/png" # Tipo MIME correcto
