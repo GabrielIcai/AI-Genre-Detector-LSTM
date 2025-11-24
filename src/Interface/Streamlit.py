@@ -290,12 +290,7 @@ WARM_PALETTE = ['#FFD700', '#FFB300', '#FF8C00', '#D2691E', '#8B4513']
 # --- LÓGICA DE CARGA DEL LOGO (Base64) ---
 import base64
 
-# Construcción de la ruta CORREGIDA
-# Desde: [Directorio del script]/
-# Se mueve hacia arriba: os.path.dirname(__file__) se convierte en 'src/interfaz'
-# El archivo está en: os.path.join(os.path.dirname(os.path.dirname(__file__)), '6.png') 
-# Esto resuelve a: 'src/6.png'
-logo_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '6.png') 
+logo_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'Prod-AI.png') 
 
 logo_html = ""
 image_mimetype = "image/png" # Tipo MIME correcto
