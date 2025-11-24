@@ -285,8 +285,38 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ===================== 5. INTERFAZ =======================
+# ===================== 5. INTERFAZ =======================
 WARM_PALETTE = ['#FFD700', '#FFB300', '#FF8C00', '#D2691E', '#8B4513']
+
+# --- AÑADIR LOGO CON BASE64 ---
+import base64
+
+# NOTA: La ruta debe ser relativa al script de Streamlit
+logo_path = os.path.join(os.path.dirname(__file__), 'src', '6.jpg') 
+
+# Intenta leer el archivo
+try:
+    with open(logo_path, "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read()).decode()
+    
+    # Crea el tag IMG codificado
+    logo_html = f'<img src="data:image/jpeg;base64,{encoded_string}" style="height: 30px; vertical-align: middle; margin-right: 15px; border-radius: 5px;">'
+except FileNotFoundError:
+    # Si el archivo no se encuentra, deja un placeholder vacío o texto.
+    logo_html = ""
+except Exception as e:
+    logo_html = ""
+    st.error(f"Error al cargar el logo: {e}")
+
 # ------------ NAVBAR ------------
+# ... (El código anterior continúa aquí)
+# ------------ NAVBAR ------------
+st.markdown(f"""
+<div class='top-bar'>
+    {logo_html}
+    Prod.AI — Music Genre Detector & Stem Splitter 
+</div>
+""", unsafe_allow_html=True)
 st.markdown("<div class='top-bar'>Prod.AI — Music Genre Detector & Stem Splitter </div>", unsafe_allow_html=True)
 
 # ------------ LAYOUT -------------
