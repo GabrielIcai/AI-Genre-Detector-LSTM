@@ -285,32 +285,34 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ===================== 5. INTERFAZ =======================
-# ===================== 5. INTERFAZ =======================
 WARM_PALETTE = ['#FFD700', '#FFB300', '#FF8C00', '#D2691E', '#8B4513']
 
 # --- LÓGICA DE CARGA DEL LOGO (Base64) ---
 import base64
 
-# Construcción de la ruta: Asegúrate de que apunte al archivo correcto.
-logo_path = os.path.join(os.path.dirname(__file__), 'src', '6.jpg') 
-# NOTA: Aunque el nombre del archivo es '.jpg', el tipo MIME debe ser 'image/png'
-# ya que indicaste que el contenido real es PNG.
+# Construcción de la ruta CORREGIDA
+# Desde: [Directorio del script]/
+# Se mueve hacia arriba: os.path.dirname(__file__) se convierte en 'src/interfaz'
+# El archivo está en: os.path.join(os.path.dirname(os.path.dirname(__file__)), '6.png') 
+# Esto resuelve a: 'src/6.png'
+logo_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '6.png') 
+
 logo_html = ""
-image_mimetype = "image/png" # <--- ¡CAMBIO CLAVE!
+image_mimetype = "image/png" # Tipo MIME correcto
 
 try:
     with open(logo_path, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read()).decode()
     
-    # Crea el tag IMG codificado con la data URI y el MIME TYPE correcto
+    # Crea el tag IMG codificado con la data URI
     logo_html = f'<img src="data:{image_mimetype};base64,{encoded_string}" style="height: 30px; vertical-align: middle; margin-right: 15px; border-radius: 5px;">'
 
 except FileNotFoundError:
-    # Si la ruta es incorrecta, avisa discretamente.
+    # Muestra un mensaje de advertencia si la ruta sigue siendo incorrecta
     st.sidebar.warning(f"Error de ruta: No se encontró la imagen en '{logo_path}'.")
     logo_html = f'<span style="font-size: 24px; vertical-align: middle; margin-right: 15px;">❌</span>'
 except Exception as e:
-    # Capturar otros errores
+    # Captura otros errores (p. ej., problemas de permisos)
     st.sidebar.error(f"Error al cargar/codificar el logo: {e}")
     logo_html = f'<span style="font-size: 24px; vertical-align: middle; margin-right: 15px;">❌</span>'
 
@@ -322,7 +324,9 @@ st.markdown(f"""
     Prod.AI — Music Genre Detector & Stem Splitter 
 </div>
 """, unsafe_allow_html=True)
-#... (el resto del código continúa)
+
+# ------------ LAYOUT -------------
+# ... (el resto del código continúa)
 
 
 # ------------ LAYOUT -------------
