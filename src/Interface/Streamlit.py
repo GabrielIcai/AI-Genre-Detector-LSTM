@@ -300,7 +300,7 @@ try:
         encoded_string = base64.b64encode(image_file.read()).decode()
     
     # Crea el tag IMG codificado con la data URI
-    logo_html = f'<img src="data:{image_mimetype};base64,{encoded_string}" style="height: 52px; vertical-align: middle; margin-right: 15px; width=100px;border-radius: 2px;">'
+    logo_html = f'<img src="data:{image_mimetype};base64,{encoded_string}" style="height: 52px; vertical-align: middle; margin-right: 15px; width=20px;border-radius: 2px;">'
 
 except FileNotFoundError:
     # Muestra un mensaje de advertencia si la ruta sigue siendo incorrecta
