@@ -10,8 +10,8 @@ from PIL import Image
 
 # --- CONFIGURACIÓN ---
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-#MODEL_PATH = "Final model/best_CRNN_genre_5_2.pth"
-MODEL_PATH = "Final model/CRNN_5_genre_2.pth"
+MODEL_PATH = "Final model/best_CRNN_genre_5_2.pth"
+#MODEL_PATH = "Final model/CRNN_5_genre_2.pth"
 CLASS_NAMES = ["Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
 MEAN = [0.676956295967102, 0.2529653012752533, 0.4388839304447174]
 STD = [0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
