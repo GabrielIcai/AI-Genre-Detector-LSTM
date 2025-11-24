@@ -285,7 +285,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ===================== 5. INTERFAZ =======================
-# ===================== 5. INTERFAZ =======================
 WARM_PALETTE = ['#FFD700', '#FFB300', '#FF8C00', '#D2691E', '#8B4513']
 
 # --- AÑADIR LOGO CON BASE64 ---
@@ -317,7 +316,7 @@ st.markdown(f"""
     Prod.AI — Music Genre Detector & Stem Splitter 
 </div>
 """, unsafe_allow_html=True)
-st.markdown("<div class='top-bar'>Prod.AI — Music Genre Detector & Stem Splitter </div>", unsafe_allow_html=True)
+
 
 # ------------ LAYOUT -------------
 left, right = st.columns([2, 1], gap="large")
