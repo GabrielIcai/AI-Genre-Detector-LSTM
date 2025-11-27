@@ -315,7 +315,7 @@ except Exception as e:
 st.markdown(f"""
 <div class='top-bar'>
     {logo_html}
-    Prod.AI — Music Genre Detector & Stem Splitter 
+     Music Genre Detector & Stem Splitter 
 </div>
 """, unsafe_allow_html=True)
 
