@@ -18,7 +18,7 @@ import librosa
 import pandas as pd 
 
 # --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="LALAAI", layout="wide")
+st.set_page_config(page_title="Prod.AI", layout="wide")
 
 # =========================================================
 # === 1. CARGA DINÁMICA DE MÓDULOS DE PROCESAMIENTO (AI) ===
