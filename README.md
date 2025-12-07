@@ -10,7 +10,7 @@
 
 En el panorama competitivo de la música actual, la **aceptación en plataformas digitales** y la **cohesión en sets de DJ** dependen de que un *track* se alinee perfectamente con las expectativas sónicas de su género. Los productores a menudo trabajan a ciegas, adivinando si su mezcla o *mastering* encaja.
 
-**GenreAnalyzer Pro** es la herramienta diseñada para terminar con las conjeturas. Es un sistema de análisis musical impulsado por IA que proporciona **información objetiva y cuantificable** sobre las características energéticas y estructurales de una canción.
+**Prod.AI** es la herramienta diseñada para terminar con las conjeturas. Es un sistema de análisis musical impulsado por IA que proporciona información objetiva y cuantificable sobre las características energéticas y estructurales de una canción.
 
 **💡 Enfocado en:**
 * Asegurar que las canciones suenen **acordes al género** para mejorar la aceptación en plataformas.
