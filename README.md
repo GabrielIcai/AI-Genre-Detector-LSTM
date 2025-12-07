@@ -6,7 +6,7 @@
   <img src="https://img.shields.io/badge/Tecnología-Deep_Learning-red" alt="Tecnología: Deep Learning">
 </p>
 
-## 🚀 Motivación: El Éxito en la Producción Musical Moderna
+## Motivación: El Éxito en la Producción Musical Moderna
 
 En el panorama competitivo de la música actual, la **aceptación en plataformas digitales** y la **cohesión en sets de DJ** dependen de que un *track* se alinee perfectamente con las expectativas sónicas de su género. Los productores a menudo trabajan a ciegas, adivinando si su mezcla o *mastering* encaja.
 
@@ -19,29 +19,29 @@ En el panorama competitivo de la música actual, la **aceptación en plataformas
 
 ---
 
-## ✨ Características Principales
+##  Características Principales
 
-### 1. Detección de Género Avanzada 🧠
+### 1. Detección de Género Avanzada 
 Utilizamos una arquitectura de red neuronal recurrente sofisticada para analizar el audio, incluyendo modelos **LSTM (Long Short-Term Memory)** y **GRU (Gated Recurrent Unit)**. 
 
 * **Detección:** Predice el género musical más probable con alta precisión basándose en *features* espectrales y temporales.
 
-### 2. Análisis Métrico Cuantificable 📊
+### 2. Análisis Métrico Cuantificable 
 Extraemos métricas acústicas clave de la canción (como energía, RMS, y densidad espectral) y las comparamos con los **patrones ideales** del género predicho.
 
 * **Feedback Directo:** El sistema indica si el *track* está **por encima o por debajo** del perfil energético estándar del género, facilitando ajustes precisos de *mixing* o *mastering*.
 
-### 3. Separación de Fuentes (Aislamiento Vocal) 🎙️
+### 3. Separación de Fuentes (Aislamiento Vocal) 
 Una funcionalidad esencial para el análisis detallado:
 * **Aislamiento:** Permite **separar las pistas vocales de la instrumental** (música de fondo).
 * **Utilidad:** Ideal para analizar la complejidad rítmica de la instrumental, estudiar la producción vocal o aislar pistas para remezclas creativas.
 
-### 4. Visualización de Energía ⚡
+### 4. Visualización de Energía 
 Generación de una **tabla de energía** detallada, mostrando cómo se distribuye la potencia de la señal a lo largo del tiempo. Crucial para analizar las dinámicas y la percepción de *loudness*.
 
 ---
 
-## 🛠️ Tecnologías Utilizadas
+##  Tecnologías Utilizadas
 
 | Componente | Herramientas Clave | Propósito |
 | :--- | :--- | :--- |
